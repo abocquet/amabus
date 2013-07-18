@@ -110,37 +110,25 @@ document.body.onload = function(){
 			};
 		};
 
-		// gestion de la vue 
+		this.numOfFav = function(FavHTML){
 
-		this.editButton = document.createElement("input");
-			this.editButton.className = "right edit";
-			this.editButton.type = "button" ;
-			this.editButton.value = "Modifier"
+			var i = 0,
+			currentFav = this.container.firstChild ;
 
-			this.editButton.onclick = function()
-			{
-				that.isEditing = !that.isEditing ;
-				if(that.isEditing)
-				{
-					this.value = "Terminé" ;
-					this.className = "active right edit"
-
-					for (var i = 0, c = that.listeFavoris.length ; i < c; i++) {
-						that.listeFavoris[i].startTrans();
-					};
-				}
-				else
-				{
-					this.value = "Modifier" ;
-					this.className = "right edit";
-
-					for (var i = 0, c = that.listeFavoris.length ; i < c; i++) {
-						that.listeFavoris[i].stopTrans();
-					};
-				}
+			while(currentFav != FavHTML){
+				i++ ;
+				currentFav = currentFav.nextSibling ;
 			}
 
-			this.container.insertBefore(this.editButton, this.container.firstChild);
+			return i ;
+
+		}
+
+		this.VtoF = function(view){
+
+			return this.listeFavoris[this.numOfFav(view)] ;
+
+		}
 	}
 
 	function Favori(container){
@@ -148,7 +136,6 @@ document.body.onload = function(){
 		var that = this ;
 		this.nom = "Nouveau lieu";
 		this.isDefault = false ;
-		this.inTrans = false ;
 
 		// Les autres parametres par défaut seront déterminé par la position courante du device
 		this.adresse = "666 Steve Jobs Avenue";
@@ -167,12 +154,29 @@ document.body.onload = function(){
 			this.static = document.createElement("div");
 				this.static.className = "favoris" ;
 
+				var modifier = document.createElement('input');
+					modifier.type = "button" ;
+					modifier.value = "Modifier" ;
+					modifier.className = "right" ;
+
+				modifier.addEventListener('click', function(e){
+					e.preventDefault();
+
+					Favori.toogleView(that.container);
+					if(mainManager.isEditing)
+					{	
+						Favori.disableEditable();
+					}
+
+				}, false);
+
 				var title = document.createElement('h5');
 					title.textContent = this.nom ;
 
 				var adresse = document.createElement("p");
 					adresse.textContent = this.adresse ;
 
+			this.static.appendChild(modifier);
 			this.static.appendChild(title);
 			this.static.appendChild(adresse);
 		}		
@@ -182,18 +186,14 @@ document.body.onload = function(){
 			this.dynamic = document.createElement("div");
 				this.dynamic.className = "favoris" ;
 
-				var terminer = document.createElement('a');
-					terminer.href = "#" ;
-					terminer.textContent = "terminer" ;
-					terminer.className = "right" ;
+				var terminer = document.createElement('input');
+					terminer.type = "button" ;
+					terminer.value = "Enregistrer" ;
+					terminer.className = "right active" ;
 
 				terminer.addEventListener('click', function(e){
 					e.preventDefault();
-
-					if(mainManager.isEditing)
-					{	
-						Favori.disableEditable();
-					}
+					Favori.disableEditable();
 
 				}, false);
 
@@ -210,41 +210,12 @@ document.body.onload = function(){
 					adresse.type = "text"; 
 					adresse.value = this.adresse ;
 
+			this.dynamic.appendChild(terminer);
 			this.dynamic.appendChild(title);
 			this.dynamic.appendChild(map);
 			this.dynamic.appendChild(adresse);
 
 			this.dynamic.style.display = "none";
-		}
-
-		this.createTrans = function(){
-
-			this.trans = document.createElement("div");
-				this.trans.className = "favoris" ;
-
-				var modifier = document.createElement('a');
-					modifier.href = "#" ;
-					modifier.textContent = "modifier" ;
-					modifier.className = "right" ;
-
-					modifier.addEventListener('click', function(e){
-						e.preventDefault();
-
-						if(mainManager.isEditing)
-						{	
-							Favori.disableEditable();
-							Favori.toogleView(that.container); 
-						}
-
-					}, false);
-
-				var title = document.createElement('h5');
-					title.textContent = this.nom ;
-
-			this.trans.appendChild(modifier);
-			this.trans.appendChild(title);
-
-			this.trans.style.display = "none" ;
 		}
 
 		Favori.disableEditable = function()
@@ -255,7 +226,7 @@ document.body.onload = function(){
 				//
 				// 	iiiiiii  ccccccc iiiiiii
 				//     i     c          i
-				//     i     c          i    On rafraichis toutes les vues
+				//     i     c          i    On rafraichis toutes les vues du favoris
 				//     i     c          i
 				//  iiiiiii  ccccccc iiiiiii
 				//
@@ -270,53 +241,23 @@ document.body.onload = function(){
 			{	
 				//et on s'occupe d'abord de la vue
 				element.lastChild.style.display = "none" ;
-				element.firstChild.nextSibling.style.display = "block" ;
+				element.firstChild.style.display = "block" ;
 				element.id = "";
 
 			}
 			else
 			{
-				element.firstChild.nextSibling.style.display = "none" ;
+				element.firstChild.style.display = "none" ;
 				element.lastChild.style.display = "block" ;
 				element.id = "editing";
 			}
 		}
 
-		this.stopTrans = function(){
-			this.inTrans = false ;
-
-			var child = this.container.firstChild ;
-			child.style.display = "block" ;
-
-			while(child = child.nextSibling)
-			{
-				child.style.display = "none";
-			}
-		}
-
-		this.startTrans = function(){
-			this.inTrans = true ;
-
-			var child = this.container.firstChild ;
-			child.style.display = "none" ;
-
-			child = child.nextSibling ;			
-			child.style.display = "block";
-
-			while(child = child.nextSibling)
-			{
-				child.style.display = "none";
-			}
-		}
-		
-
 		this.afficher = function(){
 			this.createStatic();
-			this.createTrans() ;
 			this.createDynamic();
 
 			this.container.appendChild(this.static) ;
-			this.container.appendChild(this.trans) ;
 			this.container.appendChild(this.dynamic);
 		}
 
