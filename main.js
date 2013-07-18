@@ -58,6 +58,15 @@ document.body.onload = function(){
 		}
 	}
 
+	function giveNextTag(tag, element){
+		
+		tag = tag.toUpperCase() ;
+		do { element = element.nextElementSibling ; } 
+		while(element.tagName != tag);
+
+		return element ;
+	}
+
 	function FavorisManager(container){
 
 		//Gestion des favoris
@@ -67,7 +76,7 @@ document.body.onload = function(){
 		this.container = container ;
 
 		this.addFavori = function(){
-			var fav = new Favori(this.container);
+			var fav = new Favori(this.container, this);
 			fav.afficher();
 
 			this.listeFavoris.push(fav);
@@ -113,14 +122,14 @@ document.body.onload = function(){
 		this.numOfFav = function(FavHTML){
 
 			var i = 0,
-			currentFav = this.container.firstChild ;
-
+			currentFav = this.container.firstElementChild ;
 			while(currentFav != FavHTML){
 				i++ ;
-				currentFav = currentFav.nextSibling ;
+				currentFav = currentFav.nextElementSibling ;
 			}
 
-			return i ;
+			//On ne doit pas compter le titre
+			return i - 1;
 
 		}
 
@@ -131,9 +140,10 @@ document.body.onload = function(){
 		}
 	}
 
-	function Favori(container){
+	function Favori(container, manager){
 
 		var that = this ;
+
 		this.nom = "Nouveau lieu";
 		this.isDefault = false ;
 
@@ -162,11 +172,8 @@ document.body.onload = function(){
 				modifier.addEventListener('click', function(e){
 					e.preventDefault();
 
+					Favori.disableEditable();
 					Favori.toogleView(that.container);
-					if(mainManager.isEditing)
-					{	
-						Favori.disableEditable();
-					}
 
 				}, false);
 
@@ -218,21 +225,40 @@ document.body.onload = function(){
 			this.dynamic.style.display = "none";
 		}
 
-		Favori.disableEditable = function()
-		{
+		Favori.disableEditable = function(){
+
 			var editingView = document.querySelector("#editing");
 			if(editingView != undefined){ 
 
-				//
-				// 	iiiiiii  ccccccc iiiiiii
-				//     i     c          i
-				//     i     c          i    On rafraichis toutes les vues du favoris
-				//     i     c          i
-				//  iiiiiii  ccccccc iiiiiii
-				//
-
+				Favori.bindFavori(editingView) ;
 				Favori.toogleView(editingView);
 			}
+		}
+
+		Favori.bindFavori = function(element){
+
+			var currentFav = Favori.manager.VtoF(element),
+				currentElement = currentFav.dynamic.firstChild ;
+
+			//Le noeud du titre
+			currentElement = giveNextTag("input", currentElement) ;
+			currentFav.nom = currentElement.value ;
+
+			//Le noeud de l'adresse
+			currentElement = giveNextTag("input", currentElement);
+			currentFav.adresse = currentElement.value ;
+
+			//Puis on hydrate la vue
+				//Le noeud du titre
+				currentElement = giveNextTag("h5", currentFav.static.firstChild) ;
+				currentElement.textContent = currentFav.nom ;
+
+				//Le noeud de l'adresse
+				currentElement = giveNextTag("p", currentElement); ;
+				currentElement.textContent = currentFav.adresse ;
+
+			Favori.manager.serialize();
+
 		}
 
 		Favori.toogleView = function(element){
@@ -286,6 +312,7 @@ document.body.onload = function(){
 	
 	// Balancage massif de purée de Brocolis+pommes+liqueure de frelons
 	var mainManager = new FavorisManager(document.querySelector("#favoris"));
+	Favori.manager = mainManager ;
 	
 	// mainManager.addFavori();
 
