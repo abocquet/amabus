@@ -123,6 +123,18 @@ input[type="button"]:hover, input[type="button"].active /* la classe active est 
 	background-color: #7f8082 ;
 }
 
+input[type="button"].alert
+{
+	color: #E13C3F ;
+	border-color: #E13C3F;
+}
+
+input[type="button"].alert:hover, input[type="button"].alert.active /* la classe active est donnée par JavaScript */
+{
+	color: white;
+	background-color: #E13C3F ;
+}
+
 /*-------------------------*/
 
 .collapsed
@@ -160,6 +172,16 @@ input[type="button"]:hover, input[type="button"].active /* la classe active est 
 	display: block ;
 	float: right ;
 }
+
+.centered
+{
+	display: block;
+	margin: auto;
+
+	text-align: center ;
+}
+
+/*-------------------------*/
 
 #favoris h3
 {

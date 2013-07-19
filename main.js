@@ -75,6 +75,16 @@ document.body.onload = function(){
 		this.isEditing = false ;
 		this.container = container ;
 
+		this.addFavoriButton = document.createElement("input");
+			this.addFavoriButton.className = "centered";
+			this.addFavoriButton.value = "Ajouter un lieu favori";
+
+			this.addFavoriButton.onclick = function(){
+				that.addFavori();
+			}
+
+			this.container.appendChild(this.addFavoriButton);
+
 		this.addFavori = function(){
 			var fav = new Favori(this.container, this);
 			fav.afficher();
@@ -82,23 +92,26 @@ document.body.onload = function(){
 			this.listeFavoris.push(fav);
 		}
 
-		this.removeFavori = function(nom){
+		this.removeFavori = function(element){
 
-			for(favori in this.listeFavoris)
-			{
-				if(favori.nom == nom)
+			for (i in this.listeFavoris) {
+				
+				if(this.listeFavoris[i] == element)
 				{
-					delete(this.listeFavoris[favori]);
+					this.listeFavoris[i].effacer();
+					delete(this.listeFavoris[i]);
 					break;
 				}
 			}
+
+			this.serialize() ;
 		}
 
 		//gestion de la persistance des données
 		this.serialize = function(){
 			var listeSerialize = [];
 
-			for (var i = 0, c = this.listeFavoris.length ; i < c; i++) {
+			for (i in this.listeFavoris) {
 				listeSerialize.push(this.listeFavoris[i].serialize());
 			};
 
@@ -157,7 +170,7 @@ document.body.onload = function(){
 		//Gestion de toutes les vues
 
 		this.container = document.createElement("div");
-			container.appendChild(this.container);
+			container.insertBefore(this.container, container.lastChild);
 
 		this.createStatic = function(){
 
@@ -169,13 +182,12 @@ document.body.onload = function(){
 					modifier.value = "Modifier" ;
 					modifier.className = "right" ;
 
-				modifier.addEventListener('click', function(e){
-					e.preventDefault();
+				modifier.onclick =  function(){
 
 					Favori.disableEditable();
 					Favori.toogleView(that.container);
 
-				}, false);
+				};
 
 				var title = document.createElement('h5');
 					title.textContent = this.nom ;
@@ -198,11 +210,11 @@ document.body.onload = function(){
 					terminer.value = "Enregistrer" ;
 					terminer.className = "right active" ;
 
-				terminer.addEventListener('click', function(e){
-					e.preventDefault();
+				terminer.onclick = function(e){
+
 					Favori.disableEditable();
 
-				}, false);
+				}
 
 				var title = document.createElement('input');
 					title.className = "h5"
@@ -217,10 +229,25 @@ document.body.onload = function(){
 					adresse.type = "text"; 
 					adresse.value = this.adresse ;
 
+				var deleteButton = document.createElement("input");
+					deleteButton.type = "button";
+					deleteButton.className = "alert";
+					deleteButton.value = "Supprimer ce favoris";
+
+					deleteButton.onclick = function(){
+
+						if(confirm("Êtes-vous sûr de vouloir supprimer " + that.nom + " ?"));
+						{
+							Favori.manager.removeFavori(that);
+						}
+
+					}
+
 			this.dynamic.appendChild(terminer);
 			this.dynamic.appendChild(title);
 			this.dynamic.appendChild(map);
 			this.dynamic.appendChild(adresse);
+			this.dynamic.appendChild(deleteButton);
 
 			this.dynamic.style.display = "none";
 		}
@@ -285,6 +312,10 @@ document.body.onload = function(){
 
 			this.container.appendChild(this.static) ;
 			this.container.appendChild(this.dynamic);
+		}
+
+		this.effacer = function(){
+			this.container.parentNode.removeChild(this.container);
 		}
 
 		//Gestion de la persistance des données
