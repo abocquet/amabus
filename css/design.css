@@ -188,13 +188,21 @@ input[type="button"].alert:hover, input[type="button"].alert.active /* la classe
 	margin-bottom: 10px ;
 }
 
-#favoris div
+#favoris > div
 {
 	margin: 0px ;
 	padding: 10px ;
 }
 
-#favoris div:hover, #favoris div.active
+#favoris > div:hover, #favoris div.active
 {
 	background-color: #EEF0F3 ;
+}
+
+/*-------------------------*/
+
+.map
+{
+	width: 100% ;
+	height: 350px ;
 }

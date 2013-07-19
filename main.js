@@ -18,7 +18,7 @@ document.body.onload = function(){
 
 				xhr.onreadystatechange = function() { 
 					if (xhr.readyState == 4 && xhr.status == 200) {
-				     	fonction(xhr.responseText);	      
+						fonction(xhr.responseText);	      
 					}
 				};
 				xhr.send(); // La requête est prête, on envoie tout !
@@ -38,13 +38,14 @@ document.body.onload = function(){
 				switch(error.code)
 				{
 					case error.PERMISSION_DENIED :
-						window.location = "http://localhost/amabus/web/app_dev.php/explications#geolocation.permission" ;
+						window.location = "PAGE D'EXPLICATION" ;
+
 						break;
 						
 					case error.TIMEOUT :
 						if(confirm("La localisation prend trop de temps. Voulez-vous réessayer ?"))
 						{
-							alert("fwp.rafraichis();");
+							// GetPosition
 						}
 						break; 
 						
@@ -54,7 +55,9 @@ document.body.onload = function(){
 						alert("Une erreur s'est produite durant la localisation. Essayez de recharger la page plus tard.")
 						break ;
 				}
-			}	
+			},
+
+			coder : new google.maps.Geocoder()
 		}
 	}
 
@@ -77,6 +80,7 @@ document.body.onload = function(){
 
 		this.addFavoriButton = document.createElement("input");
 			this.addFavoriButton.className = "centered";
+			this.addFavoriButton.type = "button" ;
 			this.addFavoriButton.value = "Ajouter un lieu favori";
 
 			this.addFavoriButton.onclick = function(){
@@ -90,6 +94,7 @@ document.body.onload = function(){
 			fav.afficher();
 
 			this.listeFavoris.push(fav);
+			this.serialize();
 		}
 
 		this.removeFavori = function(element){
@@ -162,8 +167,8 @@ document.body.onload = function(){
 
 		// Les autres parametres par défaut seront déterminé par la position courante du device
 		this.adresse = "666 Steve Jobs Avenue";
-		this.latitude = 45 ;
-		this.longitude = 5 ;
+		this.latitude = 0 ;
+		this.longitude = 0 ;
 
 		this.listeIntervals = [];
 
@@ -222,7 +227,8 @@ document.body.onload = function(){
 					title.value = this.nom ;
 
 				var map = document.createElement("div");
-					map.id = "map";
+					map.className = "map";
+					this.createMapToEdit(map);
 
 				var adresse = document.createElement("input");
 					adresse.className = "p" ;
@@ -252,6 +258,42 @@ document.body.onload = function(){
 			this.dynamic.style.display = "none";
 		}
 
+		this.createMapToEdit = function(container){
+
+			function createMap(longitude, latitude)
+			{
+				var position = new google.maps.LatLng(latitude, longitude);
+
+				var map = new google.maps.Map(container, {
+
+					zoom: 15,
+					center: position,
+					mapTypeId: google.maps.MapTypeId.ROADMAP 
+
+				});
+
+				var marker = new google.maps.Marker({ 
+					position: position, 
+					map: map,
+					draggable: true 
+				});
+			
+			}
+
+			if(this.latitude == 0 && this.longitude == 0)
+			{
+				api.geo.getPosition(function(position){
+					createMap(position.coords.longitude, position.coords.latitude);
+				});
+			}
+			else
+			{
+				createMap(this.longitude, this.latitude);
+			}
+
+
+		}
+
 		Favori.disableEditable = function(){
 
 			var editingView = document.querySelector("#editing");
@@ -264,8 +306,8 @@ document.body.onload = function(){
 
 		Favori.bindFavori = function(element){
 
-			var currentFav = Favori.manager.VtoF(element),
-				currentElement = currentFav.dynamic.firstChild ;
+			var currentFav = Favori.manager.VtoF(element);
+			var currentElement = currentFav.dynamic.firstChild ;
 
 			//Le noeud du titre
 			currentElement = giveNextTag("input", currentElement) ;
@@ -344,25 +386,5 @@ document.body.onload = function(){
 	// Balancage massif de purée de Brocolis+pommes+liqueure de frelons
 	var mainManager = new FavorisManager(document.querySelector("#favoris"));
 	Favori.manager = mainManager ;
-	
-	// mainManager.addFavori();
-
-	// mainManager.listeFavoris[0].nom = "Domicile" ;
-	// mainManager.listeFavoris[0].isDefault = true ;
-	// mainManager.listeFavoris[0].latitude = 45 ;
-	// mainManager.listeFavoris[0].longitude = 5 ;
-	// mainManager.listeFavoris[0].adresse = "200 route des rieux Montbonnot" ;
-
-	// mainManager.addFavori();
-
-	// mainManager.listeFavoris[1].nom = "Lycée" ;
-	// mainManager.listeFavoris[1].isDefault = false ;
-	// mainManager.listeFavoris[1].latitude = 44 ;
-	// mainManager.listeFavoris[1].longitude = 6 ;
-	// mainManager.listeFavoris[1].adresse = "1 avenue du taillefer Meylan" ;
-	
-	// console.log(mainManager);
-
-	// mainManager.serialize() ;
 	mainManager.unserialize();
 };
