@@ -4,8 +4,120 @@
 		"selected_items":
 		[
 			[
+				"la",
+				"listeFavoris  (variable)"
+			],
+			[
+				"add",
+				"addFavoriButton  (variable)"
+			],
+			[
+				"text-align",
+				"text-align:   (property)"
+			],
+			[
+				"backgrou",
+				"background-color"
+			],
+			[
+				"border-",
+				"border-color:   (property)"
+			],
+			[
+				"current",
+				"currentElement  (variable)"
+			],
+			[
+				"lad",
+				"lastChild"
+			],
+			[
+				"in",
+				"inTrans"
+			],
+			[
+				"create",
+				"createTrans"
+			],
+			[
+				"dis",
+				"display"
+			],
+			[
+				"text",
+				"textContent"
+			],
+			[
+				"Favori",
+				"Favori"
+			],
+			[
+				"cre",
+				"createElement"
+			],
+			[
+				"id",
+				"isEditing"
+			],
+			[
+				"editin",
+				"editingView"
+			],
+			[
+				"edi",
+				"editingView"
+			],
+			[
+				"i",
+				"i"
+			],
+			[
+				"liste",
+				"listeFavoris"
+			],
+			[
+				"conr",
+				"container"
+			],
+			[
+				"fun",
+				"function"
+			],
+			[
+				"ti",
+				"title"
+			],
+			[
+				"fa",
+				"favoris"
+			],
+			[
+				"is",
+				"isDefault"
+			],
+			[
+				"edit",
+				"editButton"
+			],
+			[
+				"json",
+				"json_encode"
+			],
+			[
+				"pae",
+				"parse"
+			],
+			[
+				"get",
+				"getFile"
+			],
+			[
 				"file",
 				"fileName"
+			],
+			[
+				"print",
+				"print_r"
 			],
 			[
 				"fil",
@@ -26,10 +138,6 @@
 			[
 				"sta",
 				"staticView"
-			],
-			[
-				"get",
-				"getMirror"
 			],
 			[
 				"Favor",
@@ -67,52 +175,84 @@
 	"build_system": "Packages/User/PHP-Lint.sublime-build",
 	"command_palette":
 	{
-		"height": 147.0,
+		"height": 392.0,
 		"selected_items":
 		[
 			[
-				"php",
-				"Set Syntax: PHP"
-			],
-			[
 				"gist",
-				"Gist: Open Gist"
+				"Gist: Update File"
 			],
 			[
-				"side",
-				"View: Toggle Side Bar"
-			],
-			[
-				"rename",
-				"File: Rename"
+				"remo",
+				"Package Control: Remove Package"
 			],
 			[
 				"remove",
 				"Package Control: Remove Package"
 			],
 			[
-				"html",
-				"Set Syntax: HTML"
-			],
-			[
 				"install",
 				"Package Control: Install Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"open",
+				"File: Open In Browser - Testing Server"
+			],
+			[
+				"packe",
+				"Package Control: Remove Package"
+			],
+			[
+				"gis",
+				"Gist: Update File"
+			],
+			[
+				"gist open",
+				"Gist: Open Gist in Browser"
+			],
+			[
+				"giste",
+				"Gist: Add File to Gist"
+			],
+			[
+				"side",
+				"View: Toggle Side Bar"
+			],
+			[
+				"delete",
+				"File: Delete"
+			],
+			[
+				"sidebar",
+				"View: Toggle Side Bar"
+			],
+			[
+				"php",
+				"Set Syntax: PHP"
+			],
+			[
+				"rename",
+				"File: Rename"
+			],
+			[
+				"html",
+				"Set Syntax: HTML"
 			],
 			[
 				"edit",
 				"Project: Edit"
 			],
 			[
-				"open",
-				"File: Open In Browser - Production Server"
-			],
-			[
 				"contro",
 				"Package Control: Remove Package"
-			],
-			[
-				"instal",
-				"Package Control: Install Package"
 			],
 			[
 				"pro",
@@ -124,10 +264,6 @@
 			],
 			[
 				"instak",
-				"Package Control: Install Package"
-			],
-			[
-				"insta",
 				"Package Control: Install Package"
 			],
 			[
@@ -163,7 +299,7 @@
 				"Set Syntax: JavaScript"
 			]
 		],
-		"width": 557.0
+		"width": 449.0
 	},
 	"console":
 	{
@@ -181,22 +317,26 @@
 	"file_history":
 	[
 		"/Users/adrienbocquet/Sites/MAMP/amabus/main.js",
-		"/Users/adrienbocquet/Sites/MAMP/amabus/templates/makeCache.php",
+		"/Users/adrienbocquet/Sites/MAMP/amabus/index.html",
+		"/Users/adrienbocquet/Sites/MAMP/amabus/css/design.css",
+		"/Users/adrienbocquet/Sites/MAMP/amabus beta1/web/js/form_collection.js",
+		"/Users/adrienbocquet/Sites/MAMP/amabus/templates/favori_dynamic.html",
+		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/Default/Preferences.sublime-settings",
+		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/Default/Default (OSX).sublime-keymap",
 		"/Users/adrienbocquet/Sites/MAMP/amabus/templates/favori_static.html",
+		"/Users/adrienbocquet/Sites/MAMP/amabus/cache/makeCache.php",
+		"/Users/adrienbocquet/Sites/MAMP/amabus/cache/templates.json",
+		"/Users/adrienbocquet/Sites/MAMP/amabus/templates/makeCache.php",
 		"/Users/adrienbocquet/Sites/MAMP/amabus/templates/interval_modif.html",
 		"/Users/adrienbocquet/Sites/MAMP/amabus/amabus.sublime-project",
 		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/User/Default (OSX).sublime-keymap",
-		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/Default/Preferences.sublime-settings",
 		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/User/PHP-Lint.sublime-build",
 		"/Users/adrienbocquet/Desktop/untitled.php",
 		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/HTML/html.sublime-snippet",
-		"/Users/adrienbocquet/Sites/MAMP/amabus/index.html",
 		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/SideBarEnhancements/messages/11.13.2012.1305.0.txt",
 		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/User/JavaScript/Script-src.sublime-snippet",
 		"/Users/adrienbocquet/Desktop/SB2 raccourcis",
 		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/User/Fetch.sublime-settings",
-		"/Users/adrienbocquet/Sites/MAMP/amabus/css/design.css",
-		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/Default/Default (OSX).sublime-keymap",
 		"/Users/adrienbocquet/Sites/MAMP/amabus/Library/Router.php",
 		"/Users/adrienbocquet/Sites/MAMP/amabus/Library/Route.php",
 		"/Users/adrienbocquet/Sites/MAMP/amabus/Library/PDOFactory.php",
@@ -234,6 +374,46 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"this",
+			"currentFav",
+			"this",
+			"hidden",
+			"container",
+			"longitude",
+			"mapContainer",
+			"addE",
+			"nom",
+			"sibling",
+			"nom",
+			"console",
+			"current",
+			"firstChild",
+			"mainManager",
+			"terminer",
+			"modifier",
+			"terminer",
+			"modifier",
+			"console",
+			"this.static",
+			"console",
+			"dynamic",
+			"modfier",
+			"left",
+			"static",
+			"createDynamic",
+			"console.log",
+			"manager",
+			"this.dynamic",
+			"array",
+			"input",
+			";",
+			" ;",
+			"manager",
+			"new Fa",
+			"root",
+			"var",
+			"liste",
+			"'{\"'",
 			"nomdufichier",
 			"element",
 			"		\n",
@@ -325,16 +505,52 @@
 		"selected_items":
 		[
 			[
+				"m",
+				"main.js"
+			],
+			[
 				"main",
 				"main.js"
 			],
 			[
-				"inter",
-				"templates/interval_modif.html"
+				"",
+				"css/design.css"
 			],
 			[
-				"",
+				"desin",
+				"css/design.css"
+			],
+			[
+				".c",
+				"css/design.css"
+			],
+			[
+				"templ",
+				"templates/favori_static.html"
+			],
+			[
+				"teme",
+				"templates/favori_dynamic.html"
+			],
+			[
+				"index",
 				"index.html"
+			],
+			[
+				"te",
+				"cache/templates.json"
+			],
+			[
+				".json",
+				"cache/templates.json"
+			],
+			[
+				"make",
+				"cache/makeCache.php"
+			],
+			[
+				"inter",
+				"templates/interval_modif.html"
 			],
 			[
 				"desi",
@@ -355,6 +571,6 @@
 	"show_open_files": true,
 	"show_tabs": true,
 	"side_bar_visible": false,
-	"side_bar_width": 243.0,
+	"side_bar_width": 187.0,
 	"status_bar_visible": true
 }

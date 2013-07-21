@@ -57,7 +57,13 @@ document.body.onload = function(){
 				}
 			},
 
-			coder : new google.maps.Geocoder()
+			coder : new google.maps.Geocoder(),
+
+			map : {
+
+
+			}
+
 		}
 	}
 
@@ -172,6 +178,9 @@ document.body.onload = function(){
 
 		this.listeIntervals = [];
 
+		//On se sert de cette liste pour hydrater l'objet à partir des vues contenues dans le tableau
+		this.listeInputs = {};
+
 		//Gestion de toutes les vues
 
 		this.container = document.createElement("div");
@@ -190,18 +199,24 @@ document.body.onload = function(){
 				modifier.onclick =  function(){
 
 					Favori.disableEditable();
+
+					if(that.dynamic == undefined){
+						that.createDynamic();
+						that.container.appendChild(that.dynamic);
+					}
+
 					Favori.toogleView(that.container);
 
 				};
 
-				var title = document.createElement('h5');
-					title.textContent = this.nom ;
+				var nom = document.createElement('h5');
+					nom.textContent = this.nom ;
 
 				var adresse = document.createElement("p");
 					adresse.textContent = this.adresse ;
 
 			this.static.appendChild(modifier);
-			this.static.appendChild(title);
+			this.static.appendChild(nom);
 			this.static.appendChild(adresse);
 		}		
 
@@ -221,19 +236,27 @@ document.body.onload = function(){
 
 				}
 
-				var title = document.createElement('input');
-					title.className = "h5"
-					title.type = "text" ;
-					title.value = this.nom ;
+				var nom = document.createElement('input');
+					nom.className = "h5"
+					nom.type = "text" ;
+					nom.value = this.nom ;
 
 				var map = document.createElement("div");
 					map.className = "map";
-					this.createMapToEdit(map);
 
 				var adresse = document.createElement("input");
 					adresse.className = "p" ;
 					adresse.type = "text"; 
 					adresse.value = this.adresse ;
+
+				var longitude = document.createElement("input");
+					longitude.type = "hidden" ;
+
+				var latitude = document.createElement("input");
+					latitude.type = "hidden" ;
+
+					// api.geo.map.addGeocodeSupport(map, adresse, latitude, longitude);
+
 
 				var deleteButton = document.createElement("input");
 					deleteButton.type = "button";
@@ -246,52 +269,25 @@ document.body.onload = function(){
 						{
 							Favori.manager.removeFavori(that);
 						}
-
 					}
 
 			this.dynamic.appendChild(terminer);
-			this.dynamic.appendChild(title);
+			this.dynamic.appendChild(nom);
 			this.dynamic.appendChild(map);
+			this.dynamic.appendChild(longitude);
+			this.dynamic.appendChild(latitude);
 			this.dynamic.appendChild(adresse);
 			this.dynamic.appendChild(deleteButton);
 
+			this.listeInputs = {
+				"nom": nom,
+				"longitude": longitude,
+				"latitude": latitude,
+				"adresse": adresse
+			};
+
+			console.log(this.listeInputs)
 			this.dynamic.style.display = "none";
-		}
-
-		this.createMapToEdit = function(container){
-
-			function createMap(longitude, latitude)
-			{
-				var position = new google.maps.LatLng(latitude, longitude);
-
-				var map = new google.maps.Map(container, {
-
-					zoom: 15,
-					center: position,
-					mapTypeId: google.maps.MapTypeId.ROADMAP 
-
-				});
-
-				var marker = new google.maps.Marker({ 
-					position: position, 
-					map: map,
-					draggable: true 
-				});
-			
-			}
-
-			if(this.latitude == 0 && this.longitude == 0)
-			{
-				api.geo.getPosition(function(position){
-					createMap(position.coords.longitude, position.coords.latitude);
-				});
-			}
-			else
-			{
-				createMap(this.longitude, this.latitude);
-			}
-
-
 		}
 
 		Favori.disableEditable = function(){
@@ -304,27 +300,26 @@ document.body.onload = function(){
 			}
 		}
 
+
+		//Cette fonction hydrate la vue des champs affichés en mode static ainsi que le modèle
+
 		Favori.bindFavori = function(element){
 
-			var currentFav = Favori.manager.VtoF(element);
-			var currentElement = currentFav.dynamic.firstChild ;
+			var favori = Favori.manager.VtoF(element);
+			//On hydrate d'abord le modèle
 
-			//Le noeud du titre
-			currentElement = giveNextTag("input", currentElement) ;
-			currentFav.nom = currentElement.value ;
-
-			//Le noeud de l'adresse
-			currentElement = giveNextTag("input", currentElement);
-			currentFav.adresse = currentElement.value ;
+			for(val in favori.listeInputs){
+				favori[val] = favori.listeInputs[val].value ;
+			}
 
 			//Puis on hydrate la vue
 				//Le noeud du titre
-				currentElement = giveNextTag("h5", currentFav.static.firstChild) ;
-				currentElement.textContent = currentFav.nom ;
+				var currentElement = giveNextTag("h5", favori.static.firstChild) ;
+				currentElement.textContent = favori.nom ;
 
 				//Le noeud de l'adresse
 				currentElement = giveNextTag("p", currentElement); ;
-				currentElement.textContent = currentFav.adresse ;
+				currentElement.textContent = favori.adresse ;
 
 			Favori.manager.serialize();
 
@@ -348,15 +343,14 @@ document.body.onload = function(){
 			}
 		}
 
+		//La création de la vue dynamique se fait au clic sur le bouton "modifier"
 		this.afficher = function(){
 			this.createStatic();
-			this.createDynamic();
-
 			this.container.appendChild(this.static) ;
-			this.container.appendChild(this.dynamic);
 		}
 
 		this.effacer = function(){
+
 			this.container.parentNode.removeChild(this.container);
 		}
 
@@ -383,6 +377,7 @@ document.body.onload = function(){
 		}
 	}
 	
+	google.maps.visualRefresh = true;
 	// Balancage massif de purée de Brocolis+pommes+liqueure de frelons
 	var mainManager = new FavorisManager(document.querySelector("#favoris"));
 	Favori.manager = mainManager ;
