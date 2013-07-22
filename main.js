@@ -1,5 +1,23 @@
 document.body.onload = function(){
 
+	/**
+	 *	role -> permet la suppression aisée d'un élément dans un array
+	 *
+	 *	GET @mixed: val -> référence de l'élément à supprimer
+	 *  Returns: none
+	 */
+
+	Array.prototype.unset = function(val){
+
+		val.effacer();
+
+		var index = this.indexOf(val);
+		if(index > -1)
+		{
+			this.splice(index,1);
+		}
+	};
+
 	// Pour éviter de se retaper le code à chaque fois 
 	api = {
 		ajx : {
@@ -16,23 +34,23 @@ document.body.onload = function(){
 				xhr.open('GET', chemin);
 				xhr.setRequestHeader("X-Requested-With","XMLHttpRequest");
 
-				xhr.onreadystatechange = function() { 
+				xhr.onreadystatechange = function(){
 					if (xhr.readyState == 4 && xhr.status == 200) {
-						fonction(xhr.responseText);	      
+						fonction(xhr.responseText);
 					}
 				};
 				xhr.send(); // La requête est prête, on envoie tout !
 			}
-			
+
 		},
 
 		geo : {
-			
+
 			getPosition : function(fonction)
 			{
 				navigator.geolocation.getCurrentPosition(fonction, api.geo.displayError);
 			},
-			
+
 			displayError : function(error)
 			{
 				switch(error.code)
@@ -41,18 +59,18 @@ document.body.onload = function(){
 						window.location = "PAGE D'EXPLICATION" ;
 
 						break;
-						
+
 					case error.TIMEOUT :
 						if(confirm("La localisation prend trop de temps. Voulez-vous réessayer ?"))
 						{
 							// GetPosition
 						}
-						break; 
-						
+						break;
+
 					case error.UNKNOWN_ERROR:
 					case error.POSITION_UNAVAILABLE:
 					default:
-						alert("Une erreur s'est produite durant la localisation. Essayez de recharger la page plus tard.")
+						alert("Une erreur s'est produite durant la localisation. Essayez de recharger la page plus tard.");
 						break ;
 				}
 			},
@@ -65,12 +83,20 @@ document.body.onload = function(){
 			}
 
 		}
-	}
+	};
+
+	/**
+	 *	role -> retourne le prochain frère de l'élément spécifié du type DOM spécifié
+	 *
+	 *	GET @string : tag -> name of the tag
+	 *		@HTMLElement : element -> currentChild
+	 *  Returns: @HTMLElement
+	 */
 
 	function giveNextTag(tag, element){
-		
+
 		tag = tag.toUpperCase() ;
-		do { element = element.nextElementSibling ; } 
+		do { element = element.nextElementSibling ; }
 		while(element.tagName != tag);
 
 		return element ;
@@ -80,7 +106,7 @@ document.body.onload = function(){
 
 		//Gestion des favoris
 		var that = this ;
-		this.listeFavoris = []; 
+		this.listeFavoris = [];
 		this.isEditing = false ;
 		this.container = container ;
 
@@ -91,7 +117,7 @@ document.body.onload = function(){
 
 			this.addFavoriButton.onclick = function(){
 				that.addFavori();
-			}
+			};
 
 			this.container.appendChild(this.addFavoriButton);
 
@@ -101,36 +127,37 @@ document.body.onload = function(){
 
 			this.listeFavoris.push(fav);
 			this.serialize();
-		}
 
-		this.removeFavori = function(element){
+			return fav ;
+		};
 
-			for (i in this.listeFavoris) {
-				
-				if(this.listeFavoris[i] == element)
-				{
-					this.listeFavoris[i].effacer();
-					delete(this.listeFavoris[i]);
-					break;
-				}
+		this.removeFavori = function(val){
+
+			console.log(this.listeFavoris);
+			this.listeFavoris.unset(val);
+			console.log(this.listeFavoris);
+
+			if(this.listeFavoris.length == 0)
+			{
+				this.addFavori().isDefault = true ;
 			}
 
 			this.serialize() ;
-		}
+		};
 
 		//gestion de la persistance des données
 		this.serialize = function(){
 			var listeSerialize = [];
 
-			for (i in this.listeFavoris) {
+			for (var i = 0, c = this.listeFavoris.length ; i < c; i++) {
 				listeSerialize.push(this.listeFavoris[i].serialize());
 			};
 
 			localStorage.setItem("serializedFavList", JSON.stringify(listeSerialize));
 		};
-		
+
 		this.unserialize = function(){
-			
+
 			var listeUnserialize = JSON.parse(localStorage.getItem("serializedFavList"));
 
 			for (var i = 0, c = listeUnserialize.length ; i < c; i++) {
@@ -140,28 +167,34 @@ document.body.onload = function(){
 
 				this.listeFavoris.push(fav);
 
-			};
+			}
 		};
 
-		this.numOfFav = function(FavHTML){
+
+		/**
+		 *	role -> renvoi un objet Favori dans la liste du manager d'après une vue donnée
+		 *
+		 *	GET: @HTMLElement: view (HTMLElement)
+		 *  Returns: @Favoris
+		 */
+
+		this.VtoF = function(view){
+
+			while(view.parentNode != this.container)
+			{
+				view = view.parentNode ;
+			}
 
 			var i = 0,
-			currentFav = this.container.firstElementChild ;
-			while(currentFav != FavHTML){
+			currentFav = this.container.firstElementChild.nextElementSibling ; //On ne commence que par le second enfant, le premier étant le titre
+			while(currentFav != view){
 				i++ ;
 				currentFav = currentFav.nextElementSibling ;
 			}
 
-			//On ne doit pas compter le titre
-			return i - 1;
+			return this.listeFavoris[i] ;
 
-		}
-
-		this.VtoF = function(view){
-
-			return this.listeFavoris[this.numOfFav(view)] ;
-
-		}
+		};
 	}
 
 	function Favori(container, manager){
@@ -218,7 +251,7 @@ document.body.onload = function(){
 			this.static.appendChild(modifier);
 			this.static.appendChild(nom);
 			this.static.appendChild(adresse);
-		}		
+		};
 
 		this.createDynamic = function(){
 
@@ -234,10 +267,10 @@ document.body.onload = function(){
 
 					Favori.disableEditable();
 
-				}
+				};
 
 				var nom = document.createElement('input');
-					nom.className = "h5"
+					nom.className = "h5";
 					nom.type = "text" ;
 					nom.value = this.nom ;
 
@@ -246,7 +279,7 @@ document.body.onload = function(){
 
 				var adresse = document.createElement("input");
 					adresse.className = "p" ;
-					adresse.type = "text"; 
+					adresse.type = "text";
 					adresse.value = this.adresse ;
 
 				var longitude = document.createElement("input");
@@ -257,6 +290,46 @@ document.body.onload = function(){
 
 					// api.geo.map.addGeocodeSupport(map, adresse, latitude, longitude);
 
+				var isDefaultContainer = document.createElement("div");
+
+					randomId = Math.random() * 10000 + this.latitude + this.longitude ;
+
+					var isDefault = document.createElement('input');
+						isDefault.type = "checkbox";
+						isDefault.id = randomId ;
+						isDefault.className = "isDefault" ;
+
+						if(this.isDefault) { isDefault.checked = true ; }
+
+						isDefault.addEventListener('click', function(e){
+
+							var listeCheck = that.container.parentNode.querySelectorAll("input.isDefault");
+							// var listeCheck = document.querySelectorAll("input.isDefault");
+
+							if(e.target.checked)
+							{
+								for (var check in listeCheck) {
+									if(listeCheck[check].checked && e.target != listeCheck[check])
+									{
+										listeCheck[check].checked = false ;
+										Favori.manager.VtoF(listeCheck[check]).isDefault = false ;
+										break ;
+									}
+								}
+							}
+							else
+							{
+								e.preventDefault();
+							}
+
+						}, false);
+
+					var isDefaultLabel = document.createElement("label");
+						isDefaultLabel.textContent = "Faire de ce favoris le lieu par défaut";
+						isDefaultLabel.setAttribute("for", randomId) ;
+
+					isDefaultContainer.appendChild(isDefault);
+					isDefaultContainer.appendChild(isDefaultLabel);
 
 				var deleteButton = document.createElement("input");
 					deleteButton.type = "button";
@@ -265,11 +338,11 @@ document.body.onload = function(){
 
 					deleteButton.onclick = function(){
 
-						if(confirm("Êtes-vous sûr de vouloir supprimer " + that.nom + " ?"));
+						if(confirm("Etes-vous sûr de vouloir supprimer " + that.nom + " ?"))
 						{
 							Favori.manager.removeFavori(that);
 						}
-					}
+					};
 
 			this.dynamic.appendChild(terminer);
 			this.dynamic.appendChild(nom);
@@ -277,58 +350,65 @@ document.body.onload = function(){
 			this.dynamic.appendChild(longitude);
 			this.dynamic.appendChild(latitude);
 			this.dynamic.appendChild(adresse);
+			this.dynamic.appendChild(isDefaultContainer);
 			this.dynamic.appendChild(deleteButton);
 
 			this.listeInputs = {
 				"nom": nom,
 				"longitude": longitude,
 				"latitude": latitude,
-				"adresse": adresse
+				"adresse": adresse,
+				"isDefault": isDefault
 			};
 
-			console.log(this.listeInputs)
 			this.dynamic.style.display = "none";
-		}
+		};
 
 		Favori.disableEditable = function(){
 
 			var editingView = document.querySelector("#editing");
-			if(editingView != undefined){ 
+			if(editingView != undefined){
 
-				Favori.bindFavori(editingView) ;
+				Favori.manager.VtoF(editingView).bind() ;
 				Favori.toogleView(editingView);
 			}
-		}
+		};
 
 
 		//Cette fonction hydrate la vue des champs affichés en mode static ainsi que le modèle
+		this.bind = function(){
 
-		Favori.bindFavori = function(element){
-
-			var favori = Favori.manager.VtoF(element);
 			//On hydrate d'abord le modèle
 
-			for(val in favori.listeInputs){
-				favori[val] = favori.listeInputs[val].value ;
+			for(var val in this.listeInputs){
+				switch(this.listeInputs[val].type)
+				{
+					case "checkbox":
+						this[val] = this.listeInputs[val].checked ;
+						break ;
+					default:
+						this[val] = this.listeInputs[val].value ;
+						break ;
+				}
 			}
 
 			//Puis on hydrate la vue
 				//Le noeud du titre
-				var currentElement = giveNextTag("h5", favori.static.firstChild) ;
-				currentElement.textContent = favori.nom ;
+				var currentElement = giveNextTag("h5", this.static.firstChild) ;
+				currentElement.textContent = this.nom ;
 
 				//Le noeud de l'adresse
-				currentElement = giveNextTag("p", currentElement); ;
-				currentElement.textContent = favori.adresse ;
+				currentElement = giveNextTag("p", currentElement);
+				currentElement.textContent = this.adresse ;
 
 			Favori.manager.serialize();
 
-		}
+		};
 
 		Favori.toogleView = function(element){
 
 			if(element.id == "editing")
-			{	
+			{
 				//et on s'occupe d'abord de la vue
 				element.lastChild.style.display = "none" ;
 				element.firstChild.style.display = "block" ;
@@ -341,18 +421,18 @@ document.body.onload = function(){
 				element.lastChild.style.display = "block" ;
 				element.id = "editing";
 			}
-		}
+		};
 
 		//La création de la vue dynamique se fait au clic sur le bouton "modifier"
 		this.afficher = function(){
 			this.createStatic();
 			this.container.appendChild(this.static) ;
-		}
+		};
 
 		this.effacer = function(){
 
 			this.container.parentNode.removeChild(this.container);
-		}
+		};
 
 		//Gestion de la persistance des données
 
@@ -364,19 +444,18 @@ document.body.onload = function(){
 				"adresse": this.adresse,
 				"latitude": this.latitude,
 				"longitude": this.longitude
-			}
-		}
+			};
+		};
 
 		this.unserialize = function(args)
 		{
-			this.nom = args.nom ;
-			this.isDefault = args.isDefault;
-			this.adresse = args.adresse;
-			this.latitude = args.latitude;
-			this.longitude = args.longitude;
-		}
+			for(var arg in args)
+			{
+				this[arg] = args[arg] ;
+			}
+		};
 	}
-	
+
 	google.maps.visualRefresh = true;
 	// Balancage massif de purée de Brocolis+pommes+liqueure de frelons
 	var mainManager = new FavorisManager(document.querySelector("#favoris"));
