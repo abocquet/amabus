@@ -133,13 +133,15 @@ document.body.onload = function(){
 
 		this.removeFavori = function(val){
 
-			console.log(this.listeFavoris);
 			this.listeFavoris.unset(val);
-			console.log(this.listeFavoris);
 
 			if(this.listeFavoris.length == 0)
 			{
-				this.addFavori().isDefault = true ;
+				this.addFavori().setDefault(true);
+			}
+
+			if(val.isDefault){
+				this.listeFavoris[0].setDefault(true);
 			}
 
 			this.serialize() ;
@@ -151,7 +153,7 @@ document.body.onload = function(){
 
 			for (var i = 0, c = this.listeFavoris.length ; i < c; i++) {
 				listeSerialize.push(this.listeFavoris[i].serialize());
-			};
+			}
 
 			localStorage.setItem("serializedFavList", JSON.stringify(listeSerialize));
 		};
@@ -218,6 +220,17 @@ document.body.onload = function(){
 
 		this.container = document.createElement("div");
 			container.insertBefore(this.container, container.lastChild);
+
+		this.setDefault = function(isDefault){
+
+			this.isDefault = isDefault ;
+
+			if(this.listeInputs.isDefault != undefined)
+			{
+				this.listeInputs.isDefault.checked = this.isDefault ;
+			}
+
+		};
 
 		this.createStatic = function(){
 
@@ -304,15 +317,13 @@ document.body.onload = function(){
 						isDefault.addEventListener('click', function(e){
 
 							var listeCheck = that.container.parentNode.querySelectorAll("input.isDefault");
-							// var listeCheck = document.querySelectorAll("input.isDefault");
 
 							if(e.target.checked)
 							{
 								for (var check in listeCheck) {
 									if(listeCheck[check].checked && e.target != listeCheck[check])
 									{
-										listeCheck[check].checked = false ;
-										Favori.manager.VtoF(listeCheck[check]).isDefault = false ;
+										Favori.manager.VtoF(listeCheck[check]).setDefault(false) ;
 										break ;
 									}
 								}
@@ -374,6 +385,23 @@ document.body.onload = function(){
 			}
 		};
 
+		Favori.toogleView = function(element){
+
+			if(element.id == "editing")
+			{
+				//et on s'occupe d'abord de la vue
+				element.lastChild.style.display = "none" ;
+				element.firstChild.style.display = "block" ;
+				element.id = "";
+
+			}
+			else
+			{
+				element.firstChild.style.display = "none" ;
+				element.lastChild.style.display = "block" ;
+				element.id = "editing";
+			}
+		};
 
 		//Cette fonction hydrate la vue des champs affichés en mode static ainsi que le modèle
 		this.bind = function(){
@@ -403,24 +431,6 @@ document.body.onload = function(){
 
 			Favori.manager.serialize();
 
-		};
-
-		Favori.toogleView = function(element){
-
-			if(element.id == "editing")
-			{
-				//et on s'occupe d'abord de la vue
-				element.lastChild.style.display = "none" ;
-				element.firstChild.style.display = "block" ;
-				element.id = "";
-
-			}
-			else
-			{
-				element.firstChild.style.display = "none" ;
-				element.lastChild.style.display = "block" ;
-				element.id = "editing";
-			}
 		};
 
 		//La création de la vue dynamique se fait au clic sur le bouton "modifier"
