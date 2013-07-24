@@ -46,9 +46,16 @@ document.body.onload = function(){
 
 		geo : {
 
-			getPosition : function(fonction)
+			getPosition : function(fonction, error)
 			{
-				navigator.geolocation.getCurrentPosition(fonction, api.geo.displayError);
+				if(error == undefined)
+				{
+					navigator.geolocation.getCurrentPosition(fonction, api.geo.displayError);
+				}
+				else
+				{
+					navigator.geolocation.getCurrentPosition(fonction, error);
+				}
 			},
 
 			displayError : function(error)
@@ -75,13 +82,7 @@ document.body.onload = function(){
 				}
 			},
 
-			coder : new google.maps.Geocoder(),
-
-			map : {
-
-
-			}
-
+			coder : new google.maps.Geocoder()
 		}
 	};
 
@@ -126,19 +127,15 @@ document.body.onload = function(){
 			fav.afficher();
 
 			this.listeFavoris.push(fav);
-			this.serialize();
+			if(this.listeFavoris.length == 1){ fav.setDefault(true); }
 
-			return fav ;
+			this.serialize();
+			return fav;
 		};
 
 		this.removeFavori = function(val){
 
 			this.listeFavoris.unset(val);
-
-			if(this.listeFavoris.length == 0)
-			{
-				this.addFavori().setDefault(true);
-			}
 
 			if(val.isDefault){
 				this.listeFavoris[0].setDefault(true);
@@ -207,7 +204,42 @@ document.body.onload = function(){
 		this.isDefault = false ;
 
 		// Les autres parametres par défaut seront déterminé par la position courante du device
-		this.adresse = "666 Steve Jobs Avenue";
+
+		/**
+		 *	role -> Définir les coordonées courantes à la création d'un favori
+		 */
+
+		this.rafraichirPosition = function(){
+
+			var error = function(){
+				that.adresse = "1 place Saint Laurent, 38000 Grenoble" ;
+				that.longitude = 5.7322185 ;
+				that.latitude = 45.1978225 ;
+			};
+
+			api.geo.getPosition(function(position){
+
+				that.longitude = position.coords.longitude ;
+				that.latitude = position.coords.latitude ;
+
+				api.geo.coder.geocode({'latLng': new google.maps.LatLng(that.latitude, that.longitude)}, function(results, status) {
+					if (status == google.maps.GeocoderStatus.OK) {
+						if (results[0]) {
+							that.adresse = results[0].formatted_address ;
+							that.latitude = results[0].geometry.location.jb ;
+							that.longitude = results[0].geometry.location.kb ;
+						} else {
+							error();
+						}
+					} else {
+						error();
+					}
+				});
+
+			}, error);
+		};
+
+		this.adresse = "1 place Saint Laurent, 38000 Grenoble";
 		this.latitude = 0 ;
 		this.longitude = 0 ;
 
@@ -233,6 +265,11 @@ document.body.onload = function(){
 		};
 
 		this.createStatic = function(){
+
+			if(this.longitude == 0 && this.latitude == 0)
+			{
+				this.rafraichirPosition();
+			}
 
 			this.static = document.createElement("div");
 				this.static.className = "favoris" ;
@@ -300,8 +337,6 @@ document.body.onload = function(){
 
 				var latitude = document.createElement("input");
 					latitude.type = "hidden" ;
-
-					// api.geo.map.addGeocodeSupport(map, adresse, latitude, longitude);
 
 				var isDefaultContainer = document.createElement("div");
 
@@ -372,7 +407,81 @@ document.body.onload = function(){
 				"isDefault": isDefault
 			};
 
+			this.addGeocodeSupport(map, adresse, latitude, longitude);//On fait cela en dernier car on a besoin des noeuds parents de certains elements
+
 			this.dynamic.style.display = "none";
+		};
+
+		this.addGeocodeSupport = function(mapContainer, adresse, latitude, longitude){
+
+			var center = new google.maps.LatLng(this.latitude, this.longitude);
+
+			var map = new google.maps.Map(mapContainer,
+			{
+				center: center,
+				zoom: 11,
+				mapTypeId: google.maps.MapTypeId.ROADMAP
+			});
+
+			var marker = new google.maps.Marker({
+
+				draggable: true,
+				flat: true,
+
+				position: center,
+				map: map
+
+			});
+
+			var boutonRecherche = document.createElement("input");
+				boutonRecherche.value = "Rechercher";
+				boutonRecherche.type = "button" ;
+
+				adresse.parentNode.insertBefore(boutonRecherche, adresse.nextElementSibling);
+
+			// Toutes les fonctions suivantes permettent de lancer le geocoding
+
+			google.maps.event.addListener(marker, 'dragend', function(e){
+
+				if(e.latLng) {
+					//on applique un traitement de geocoding: coordonnées -> adresse
+					var latLng = new google.maps.LatLng(e.latLng.lat(), e.latLng.lng());
+					updateMap({'latLng': latLng});
+
+				} else {
+					alert("Erreur: le point n'a pu être enregistré");
+				}
+
+			});
+
+			boutonRecherche.addEventListener('click', function(){ updateMap({'address': adresse.value}); }, false);
+
+			adresse.addEventListener('keypress', function(e){
+
+				if(e.keyCode === 13){
+					updateMap({'address': adresse.value});
+				}
+
+			},false);
+
+			function updateMap(options){
+				api.geo.coder.geocode(options, function(results, status) {
+					if (status == google.maps.GeocoderStatus.OK) {
+						if (results[0]) {
+							adresse.value = results[0].formatted_address ;
+
+							latitude.value = results[0].geometry.location.jb ;
+							longitude.value = results[0].geometry.location.kb ;
+							map.setCenter(results[0].geometry.location);
+							marker.setPosition(results[0].geometry.location);
+						} else {
+							alert('No results found');
+						}
+					} else {
+						alert('Geocoder failed due to: ' + status);
+					}
+				});
+			}
 		};
 
 		Favori.disableEditable = function(){
@@ -420,6 +529,10 @@ document.body.onload = function(){
 				}
 			}
 
+			//Sans oublier de typer les variables
+			this.latitude = parseFloat(this.latitude);
+			this.longitude = parseFloat(this.longitude);
+
 			//Puis on hydrate la vue
 				//Le noeud du titre
 				var currentElement = giveNextTag("h5", this.static.firstChild) ;
@@ -466,7 +579,9 @@ document.body.onload = function(){
 		};
 	}
 
-	google.maps.visualRefresh = true;
+	//On survient d'abord aux besions en Google Map
+	google.maps.visualRefresh = true ;
+
 	// Balancage massif de purée de Brocolis+pommes+liqueure de frelons
 	var mainManager = new FavorisManager(document.querySelector("#favoris"));
 	Favori.manager = mainManager ;
