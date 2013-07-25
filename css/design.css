@@ -76,6 +76,7 @@ header
 	text-align: center ;
 
 	padding: 10px ;
+	/*margin-bottom: 20px ;*/
 }
 
 article
@@ -87,6 +88,11 @@ article
 	
 	border-radius: 3px ;
 }
+
+/*article:first-child
+{
+	margin-top: 0 ;
+}*/
 
 article div
 {
@@ -102,6 +108,7 @@ input
 	border-radius: 3px ;
 	
 	padding: 5px ;
+	color: #7f8082;
 }
 
 input[type="button"]
@@ -162,6 +169,22 @@ input[type="button"].alert:hover, input[type="button"].alert.active /* la classe
 	width: 85% ;
 }
 
+input.collapsed1
+{
+	margin-right: 0;
+	border-right: 0;
+	border-radius: 3px 0 0 3px ;
+
+	font-size: 100%;
+	padding: 5px;
+}
+
+input.collapsed2
+{
+	margin-left: 0;
+	border-radius: 0 3px 3px 0 ; 
+}
+
 /*-------------------------*/
 
 .right
@@ -190,6 +213,11 @@ input[type="button"].alert:hover, input[type="button"].alert.active /* la classe
 	background-color: #EEF0F3 ;
 }
 
+.noPadLeft
+{
+	padding-left: 0 ;
+}
+
 /*-------------------------*/
 
 .map
@@ -204,3 +232,18 @@ input[type="button"].alert:hover, input[type="button"].alert.active /* la classe
 {
 	padding: 0;
 }
+
+/*-------------------------*/
+/*-------------------------*/
+
+/*@media screen and (min-width: 1024px) {
+	
+	section
+	{
+		column-count:3;
+		-moz-column-count:3; /* Firefox */
+		-webkit-column-count:3; /* Safari and Chrome */
+	}
+
+}*/
+

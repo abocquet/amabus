@@ -209,7 +209,7 @@ document.body.onload = function(){
 		 *	role -> Définir les coordonées courantes à la création d'un favori
 		 */
 
-		this.rafraichirPosition = function(){
+		this.rafraichirPosition = function(onSuccess){
 
 			var error = function(){
 				that.adresse = "1 place Saint Laurent, 38000 Grenoble" ;
@@ -228,6 +228,8 @@ document.body.onload = function(){
 							that.adresse = results[0].formatted_address ;
 							that.latitude = results[0].geometry.location.jb ;
 							that.longitude = results[0].geometry.location.kb ;
+
+							onSuccess();
 						} else {
 							error();
 						}
@@ -264,43 +266,52 @@ document.body.onload = function(){
 
 		};
 
-		this.createStatic = function(){
+		this.createStatic = function(onSuccess){
+
+			var create = function(){
+
+				that.static = document.createElement("div");
+					that.static.className = "favoris" ;
+
+					var modifier = document.createElement('input');
+						modifier.type = "button" ;
+						modifier.value = "Modifier" ;
+						modifier.className = "right" ;
+
+					modifier.onclick =  function(){
+
+						Favori.disableEditable();
+
+						if(that.dynamic == undefined){
+							that.createDynamic();
+							that.container.appendChild(that.dynamic);
+						}
+
+						Favori.toogleView(that.container);
+
+					};
+
+					var nom = document.createElement('h5');
+						nom.textContent = that.nom ;
+
+					var adresse = document.createElement("p");
+						adresse.textContent = that.adresse ;
+
+				that.static.appendChild(modifier);
+				that.static.appendChild(nom);
+				that.static.appendChild(adresse);
+
+				onSuccess();
+			};
 
 			if(this.longitude == 0 && this.latitude == 0)
 			{
-				this.rafraichirPosition();
+				this.rafraichirPosition(create);
 			}
-
-			this.static = document.createElement("div");
-				this.static.className = "favoris" ;
-
-				var modifier = document.createElement('input');
-					modifier.type = "button" ;
-					modifier.value = "Modifier" ;
-					modifier.className = "right" ;
-
-				modifier.onclick =  function(){
-
-					Favori.disableEditable();
-
-					if(that.dynamic == undefined){
-						that.createDynamic();
-						that.container.appendChild(that.dynamic);
-					}
-
-					Favori.toogleView(that.container);
-
-				};
-
-				var nom = document.createElement('h5');
-					nom.textContent = this.nom ;
-
-				var adresse = document.createElement("p");
-					adresse.textContent = this.adresse ;
-
-			this.static.appendChild(modifier);
-			this.static.appendChild(nom);
-			this.static.appendChild(adresse);
+			else
+			{
+				create();
+			}
 		};
 
 		this.createDynamic = function(){
@@ -328,17 +339,20 @@ document.body.onload = function(){
 					map.className = "map";
 
 				var adresse = document.createElement("input");
-					adresse.className = "p" ;
+					adresse.className = "p collapsed1" ;
 					adresse.type = "text";
 					adresse.value = this.adresse ;
 
 				var longitude = document.createElement("input");
 					longitude.type = "hidden" ;
+					longitude.value = this.longitude ;
 
 				var latitude = document.createElement("input");
 					latitude.type = "hidden" ;
+					latitude.value = this.latitude ;
 
 				var isDefaultContainer = document.createElement("div");
+					isDefaultContainer.className = "noPadLeft" ;
 
 					randomId = Math.random() * 10000 + this.latitude + this.longitude ;
 
@@ -419,8 +433,9 @@ document.body.onload = function(){
 			var map = new google.maps.Map(mapContainer,
 			{
 				center: center,
-				zoom: 11,
-				mapTypeId: google.maps.MapTypeId.ROADMAP
+				zoom: 16,
+				mapTypeId: google.maps.MapTypeId.ROADMAP,
+				 streetViewControl: false
 			});
 
 			var marker = new google.maps.Marker({
@@ -436,6 +451,7 @@ document.body.onload = function(){
 			var boutonRecherche = document.createElement("input");
 				boutonRecherche.value = "Rechercher";
 				boutonRecherche.type = "button" ;
+				boutonRecherche.className = "collapsed2";
 
 				adresse.parentNode.insertBefore(boutonRecherche, adresse.nextElementSibling);
 
@@ -472,6 +488,7 @@ document.body.onload = function(){
 
 							latitude.value = results[0].geometry.location.jb ;
 							longitude.value = results[0].geometry.location.kb ;
+
 							map.setCenter(results[0].geometry.location);
 							marker.setPosition(results[0].geometry.location);
 						} else {
@@ -548,8 +565,10 @@ document.body.onload = function(){
 
 		//La création de la vue dynamique se fait au clic sur le bouton "modifier"
 		this.afficher = function(){
-			this.createStatic();
-			this.container.appendChild(this.static) ;
+
+			this.createStatic(function(){
+				that.container.appendChild(that.static) ;
+			});
 		};
 
 		this.effacer = function(){
