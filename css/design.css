@@ -123,7 +123,7 @@ input[type="button"].alert:hover, input[type="button"].alert.active /* la classe
 
 /*-------------------------*/
 
-input.collapsed1
+input.collapsed 
 {
     width: 45%;
     display: inline-block;
@@ -138,11 +138,14 @@ input.collapsed1
 
 }
 
-input.collapsed2 {
+input.collapsed + input.collapsed
+{
 
     width: 40% ;
     max-width: 100px;
     display: inline-block;
+
+    border-right: 1px solid #7f8082 ;
 
     -moz-border-radius: 0 3px 3px 0;
     -webkit-border-radius: 0 3px 3px 0;
@@ -205,8 +208,39 @@ input.collapsed2 {
 /*-------------------------*/
 
 @media screen and (min-width: 800px) {
-	
-	.favoris:first-child p
+
+    section
+    {
+        max-width: 1400px ;
+        margin: auto ;
+    }
+    
+    article
+    {
+        margin-top: 20px;
+        padding: 2%;
+    
+        box-sizing:border-box;
+        -moz-box-sizing:border-box; /* Firefox */
+
+        display: inline-block;
+        width: 48% ;
+
+        vertical-align: top; 
+    }
+
+    article:last-child:not(:nth-child(even))
+    {
+        display: block;
+        width: auto ;
+    }
+
+    article:nth-child(odd)
+    {
+        margin-right: 2%;
+    }
+
+    .favoris:first-child p
     {
         display: block ;
     }

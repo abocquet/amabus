@@ -331,7 +331,7 @@ document.body.onload = function(){
 					map.className = "map";
 
 				var adresse = document.createElement("input");
-					adresse.className = "p collapsed1" ;
+					adresse.className = "p collapsed" ;
 					adresse.type = "text";
 					adresse.value = this.adresse ;
 
@@ -443,7 +443,7 @@ document.body.onload = function(){
 			var boutonRecherche = document.createElement("input");
 				boutonRecherche.value = "Rechercher";
 				boutonRecherche.type = "button" ;
-				boutonRecherche.className = "collapsed2";
+				boutonRecherche.className = "collapsed";
 
 				adresse.parentNode.insertBefore(boutonRecherche, adresse.nextElementSibling);
 

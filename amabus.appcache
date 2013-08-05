@@ -1,0 +1,10 @@
+CACHE MANIFEST
+# date:v1
+
+# will be displayed if the user is offline
+FALLBACK:
+*
+index.html
+
+NETWORK:
+*.php
