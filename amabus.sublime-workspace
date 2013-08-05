@@ -4,8 +4,148 @@
 		"selected_items":
 		[
 			[
+				"pa",
+				"padding"
+			],
+			[
+				"box-s",
+				"box-sizing:   (property)"
+			],
+			[
+				"brad",
+				"border-radius:   (property)"
+			],
+			[
+				"border-r",
+				"border-right"
+			],
+			[
+				"bord",
+				"border-left"
+			],
+			[
+				"colla",
+				"collapsed"
+			],
+			[
+				"min",
+				"min-width"
+			],
+			[
+				"medi",
+				"@media	@media ${1:screen} {\n	${0}\n}"
+			],
+			[
+				"in",
+				"input	Tag"
+			],
+			[
+				"margin",
+				"margin-top"
+			],
+			[
+				"column",
+				"column-count:   (property)"
+			],
+			[
+				"max",
+				"max-width"
+			],
+			[
+				"med",
+				"@media	@media ${1:screen} {\n	${0}\n}"
+			],
+			[
+				"isDe",
+				"isDefault  (variable)"
+			],
+			[
+				"pading",
+				"padding-left"
+			],
+			[
+				"bor",
+				"border-radius"
+			],
+			[
+				"font",
+				"font-size"
+			],
+			[
+				"l",
+				"longitude  (variable)"
+			],
+			[
+				"parse",
+				"parseFloat"
+			],
+			[
+				"lo",
+				"log"
+			],
+			[
+				"bouton",
+				"boutonRecherche"
+			],
+			[
+				"liste",
+				"listeInputs"
+			],
+			[
+				"Favori",
+				"Favori"
+			],
+			[
+				"mar",
+				"margin"
+			],
+			[
+				"Fav",
+				"FavHTML"
+			],
+			[
+				"FAV",
+				"FavHTML"
+			],
+			[
+				"ar",
+				"arg"
+			],
+			[
+				"is",
+				"isDefault"
+			],
+			[
+				"ad",
+				"addFavori  (function)"
+			],
+			[
+				"check",
+				"checked"
+			],
+			[
+				"list",
+				"listeCheck"
+			],
+			[
+				"lis",
+				"listeCheck"
+			],
+			[
+				"con",
+				"container"
+			],
+			[
 				"la",
-				"listeFavoris  (variable)"
+				"latitude"
+			],
+			[
+				"isChe",
+				"isCheckedContainer"
+			],
+			[
+				"isC",
+				"isCheckedLabel"
 			],
 			[
 				"add",
@@ -32,10 +172,6 @@
 				"lastChild"
 			],
 			[
-				"in",
-				"inTrans"
-			],
-			[
 				"create",
 				"createTrans"
 			],
@@ -46,10 +182,6 @@
 			[
 				"text",
 				"textContent"
-			],
-			[
-				"Favori",
-				"Favori"
 			],
 			[
 				"cre",
@@ -72,10 +204,6 @@
 				"i"
 			],
 			[
-				"liste",
-				"listeFavoris"
-			],
-			[
 				"conr",
 				"container"
 			],
@@ -90,10 +218,6 @@
 			[
 				"fa",
 				"favoris"
-			],
-			[
-				"is",
-				"isDefault"
 			],
 			[
 				"edit",
@@ -156,10 +280,6 @@
 				"FavorisView"
 			],
 			[
-				"Fav",
-				"FavorisManagerView"
-			],
-			[
 				"Fa",
 				"FavorisManagerView"
 			],
@@ -175,12 +295,40 @@
 	"build_system": "Packages/User/PHP-Lint.sublime-build",
 	"command_palette":
 	{
-		"height": 392.0,
+		"height": 67.0,
 		"selected_items":
 		[
 			[
+				"emmet bo",
+				"Emmet: Expand Abbreviation"
+			],
+			[
+				"border-ra",
+				"Snippet: border-radius"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"emmet",
+				"Emmet: Merge Lines"
+			],
+			[
 				"gist",
 				"Gist: Update File"
+			],
+			[
+				"convert",
+				"Indentation: Convert to Tabs"
+			],
+			[
+				"conver",
+				"Indentation: Convert to Tabs"
+			],
+			[
+				"side",
+				"View: Toggle Side Bar"
 			],
 			[
 				"remo",
@@ -192,10 +340,6 @@
 			],
 			[
 				"install",
-				"Package Control: Install Package"
-			],
-			[
-				"insta",
 				"Package Control: Install Package"
 			],
 			[
@@ -221,10 +365,6 @@
 			[
 				"giste",
 				"Gist: Add File to Gist"
-			],
-			[
-				"side",
-				"View: Toggle Side Bar"
 			],
 			[
 				"delete",
@@ -299,7 +439,7 @@
 				"Set Syntax: JavaScript"
 			]
 		],
-		"width": 449.0
+		"width": 602.0
 	},
 	"console":
 	{
@@ -316,10 +456,11 @@
 	},
 	"file_history":
 	[
-		"/Users/adrienbocquet/Sites/MAMP/amabus/main.js",
-		"/Users/adrienbocquet/Sites/MAMP/amabus/index.html",
-		"/Users/adrienbocquet/Sites/MAMP/amabus/css/design.css",
 		"/Users/adrienbocquet/Sites/MAMP/amabus beta1/web/js/form_collection.js",
+		"/Users/adrienbocquet/Sites/MAMP/amabus/index.html",
+		"/Users/adrienbocquet/Sites/MAMP/amabus/main.js",
+		"/Users/adrienbocquet/Sites/MAMP/amabus/css/design.css",
+		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/User/JavaScript/comment-snippet.sublime-snippet",
 		"/Users/adrienbocquet/Sites/MAMP/amabus/templates/favori_dynamic.html",
 		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/Default/Preferences.sublime-settings",
 		"/Users/adrienbocquet/Library/Application Support/Sublime Text 2/Packages/Default/Default (OSX).sublime-keymap",
@@ -374,6 +515,60 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"collapsed",
+			"box-sizing",
+			"sizing",
+			"\n{",
+			"\n}",
+			"    }",
+			"a",
+			"dt",
+			"dl",
+			"centered",
+			"section",
+			"maps",
+			"this",
+			"5px",
+			"address",
+			"this",
+			"boutonRecherche",
+			"console.",
+			"mgs",
+			"element",
+			"div",
+			"console.log(this)",
+			"longitude",
+			"latitude",
+			"FavHTML",
+			"===",
+			"==",
+			"margin",
+			"VtoF",
+			"bindFavori",
+			"VtoF",
+			"numO",
+			"element",
+			"giveNextTag",
+			"console.log",
+			"console.log(",
+			"\");\n",
+			"isCheckedContainer",
+			"isCheckedLabel",
+			"isChecked",
+			"favori",
+			"Favori",
+			"favori",
+			"Favori",
+			";",
+			" =",
+			"that",
+			"favori",
+			",",
+			".:",
+			"\"",
+			"listeInputs",
+			"title",
+			"input",
 			"this",
 			"currentFav",
 			"this",
@@ -505,11 +700,19 @@
 		"selected_items":
 		[
 			[
-				"m",
-				"main.js"
+				"in",
+				"index.html"
+			],
+			[
+				"css",
+				"css/design.css"
 			],
 			[
 				"main",
+				"main.js"
+			],
+			[
+				"m",
 				"main.js"
 			],
 			[

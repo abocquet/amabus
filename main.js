@@ -137,8 +137,8 @@ document.body.onload = function(){
 
 			this.listeFavoris.unset(val);
 
-			if(val.isDefault){
-				this.listeFavoris[0].setDefault(true);
+			if(this.listeFavoris.length == 0){
+				this.addFavori();
 			}
 
 			this.serialize() ;
@@ -209,41 +209,41 @@ document.body.onload = function(){
 		 *	role -> Définir les coordonées courantes à la création d'un favori
 		 */
 
-		this.rafraichirPosition = function(onSuccess){
+		// this.rafraichirPosition = function(onSuccess){
 
-			var error = function(){
-				that.adresse = "1 place Saint Laurent, 38000 Grenoble" ;
-				that.longitude = 5.7322185 ;
-				that.latitude = 45.1978225 ;
-			};
+		// 	var error = function(){
+		// 		that.adresse = "1 place Saint Laurent, 38000 Grenoble" ;
+		// 		that.longitude = 5.7322185 ;
+		// 		that.latitude = 45.1978225 ;
+		// 	};
 
-			api.geo.getPosition(function(position){
+		// 	api.geo.getPosition(function(position){
 
-				that.longitude = position.coords.longitude ;
-				that.latitude = position.coords.latitude ;
+		// 		that.longitude = position.coords.longitude ;
+		// 		that.latitude = position.coords.latitude ;
 
-				api.geo.coder.geocode({'latLng': new google.maps.LatLng(that.latitude, that.longitude)}, function(results, status) {
-					if (status == google.maps.GeocoderStatus.OK) {
-						if (results[0]) {
-							that.adresse = results[0].formatted_address ;
-							that.latitude = results[0].geometry.location.jb ;
-							that.longitude = results[0].geometry.location.kb ;
+		// 		api.geo.coder.geocode({'latLng': new google.maps.LatLng(that.latitude, that.longitude)}, function(results, status) {
+		// 			if (status == google.maps.GeocoderStatus.OK) {
+		// 				if (results[0]) {
+		// 					that.adresse = results[0].formatted_address ;
+		// 					that.latitude = results[0].geometry.location.jb ;
+		// 					that.longitude = results[0].geometry.location.kb ;
 
-							onSuccess();
-						} else {
-							error();
-						}
-					} else {
-						error();
-					}
-				});
+		// 					onSuccess();
+		// 				} else {
+		// 					error();
+		// 				}
+		// 			} else {
+		// 				error();
+		// 			}
+		// 		});
 
-			}, error);
-		};
+		// 	}, error);
+		// };
 
-		this.adresse = "1 place Saint Laurent, 38000 Grenoble";
-		this.latitude = 0 ;
-		this.longitude = 0 ;
+		this.adresse = "1 place Saint Laurent, 38000 Grenoble" ;
+		this.longitude = 5.7322185 ;
+		this.latitude = 45.1978225 ;
 
 		this.listeIntervals = [];
 
@@ -263,55 +263,47 @@ document.body.onload = function(){
 			{
 				this.listeInputs.isDefault.checked = this.isDefault ;
 			}
-
 		};
 
 		this.createStatic = function(onSuccess){
 
-			var create = function(){
+			that.static = document.createElement("div");
+				that.static.className = "favoris" ;
 
-				that.static = document.createElement("div");
-					that.static.className = "favoris" ;
+				var modifier = document.createElement('input');
+					modifier.type = "button" ;
+					modifier.value = "Modifier" ;
+					modifier.className = "right" ;
 
-					var modifier = document.createElement('input');
-						modifier.type = "button" ;
-						modifier.value = "Modifier" ;
-						modifier.className = "right" ;
+				modifier.onclick =  function(){
 
-					modifier.onclick =  function(){
+					Favori.disableEditable();
 
-						Favori.disableEditable();
+					if(that.dynamic == undefined){
+						that.createDynamic();
+						that.container.appendChild(that.dynamic);
+					}
 
-						if(that.dynamic == undefined){
-							that.createDynamic();
-							that.container.appendChild(that.dynamic);
-						}
+					Favori.toogleView(that.container);
 
-						Favori.toogleView(that.container);
+				};
 
-					};
+				var nom = document.createElement('h5');
+					nom.textContent = that.nom ;
 
-					var nom = document.createElement('h5');
-						nom.textContent = that.nom ;
+				var adresse = document.createElement("p");
+					adresse.textContent = that.adresse ;
 
-					var adresse = document.createElement("p");
-						adresse.textContent = that.adresse ;
+			that.static.appendChild(modifier);
+			that.static.appendChild(nom);
+			that.static.appendChild(adresse);
 
-				that.static.appendChild(modifier);
-				that.static.appendChild(nom);
-				that.static.appendChild(adresse);
+			onSuccess();
 
-				onSuccess();
-			};
-
-			if(this.longitude == 0 && this.latitude == 0)
-			{
-				this.rafraichirPosition(create);
-			}
-			else
-			{
-				create();
-			}
+			// if(this.longitude == 0 && this.latitude == 0)
+			// {
+			// 	this.rafraichirPosition(adresse);
+			// }
 		};
 
 		this.createDynamic = function(){
@@ -393,7 +385,7 @@ document.body.onload = function(){
 
 				var deleteButton = document.createElement("input");
 					deleteButton.type = "button";
-					deleteButton.className = "alert";
+					deleteButton.className = "alert centered";
 					deleteButton.value = "Supprimer ce favoris";
 
 					deleteButton.onclick = function(){
