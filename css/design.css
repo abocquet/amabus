@@ -168,8 +168,14 @@ input.collapsed + input.collapsed
 }
 
 /*-------------------------*/
-#favoris h3 {
-    margin-bottom: 10px;
+#favoris h3 
+{
+    margin-bottom: 20px;
+}
+
+#favoris > :last-child
+{
+    margin-top: 10px ;
 }
 
 #favoris > div:hover, #favoris div.active {

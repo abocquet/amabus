@@ -167,6 +167,7 @@ document.body.onload = function(){
 
 			this.listeFavoris.push(fav);
 			if(this.listeFavoris.length == 1){ fav.setDefault(true); }
+			if(this.isEditing){ fav.setEditable(true); }
 
 			this.serialize();
 			return fav;
@@ -413,13 +414,13 @@ document.body.onload = function(){
 					nom.type = "text" ;
 					nom.value = this.nom ;
 
-				var map = document.createElement("div");
-					map.className = "map";
-
 				var adresse = document.createElement("input");
 					adresse.className = "p collapsed" ;
 					adresse.type = "text";
 					adresse.value = this.adresse ;
+
+				var map = document.createElement("div");
+					map.className = "map";
 
 				var longitude = document.createElement("input");
 					longitude.type = "hidden" ;
@@ -483,10 +484,11 @@ document.body.onload = function(){
 					};
 
 			this.dynamic.appendChild(nom);
+			this.dynamic.appendChild(adresse);
 			this.dynamic.appendChild(map);
 			this.dynamic.appendChild(longitude);
 			this.dynamic.appendChild(latitude);
-			this.dynamic.appendChild(adresse);
+			
 			this.dynamic.appendChild(isDefaultContainer);
 			this.dynamic.appendChild(deleteButton);
 
