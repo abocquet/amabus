@@ -182,6 +182,11 @@ input.collapsed + input.collapsed
     margin-bottom: 5px;
 }
 
+.favoris p 
+{
+    color: #7f8082;
+}
+
 .favoris:first-child p
 {
     display: none ;
@@ -218,13 +223,13 @@ input.collapsed + input.collapsed
     
     article
     {
-        margin: auto ;
+        margin: 3% auto ;
         padding: 5% ;
 
         box-sizing:border-box;
         -moz-box-sizing:border-box; /* Firefox */
 
-        width: 89% ;
+        width: 95% ;
     }
 
     .favoris:first-child p

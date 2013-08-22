@@ -1,3 +1,8 @@
+function d(agr)
+{
+	console.log(agr);
+}
+
 document.body.onload = function(){
 
 	/**
@@ -111,6 +116,39 @@ document.body.onload = function(){
 		this.isEditing = false ;
 		this.container = container ;
 
+		this.editButton = document.createElement("input");
+			this.editButton.type = "button" ;
+			this.editButton.value = "Modifier" ;
+			this.editButton.className = "right" ;
+
+			this.editButton.onclick = function()
+			{
+
+				that.isEditing = !that.isEditing ;
+
+				if(that.isEditing)
+				{
+					this.value = "Terminer" ;
+					this.className = "right active" ;
+
+					for(var c = that.listeFavoris.length, i = 0 ; i < c ; i++)
+					{
+						that.listeFavoris[i].setEditable(true);
+					}
+				}
+				else
+				{
+					this.value = "Modifier" ;
+					this.className = "right" ;
+
+					for(var c = that.listeFavoris.length, i = 0 ; i < c ; i++)
+					{
+						that.listeFavoris[i].setEditable(false);
+					}
+				}
+				
+			};
+
 		this.addFavoriButton = document.createElement("input");
 			this.addFavoriButton.className = "centered";
 			this.addFavoriButton.type = "button" ;
@@ -120,7 +158,8 @@ document.body.onload = function(){
 				that.addFavori();
 			};
 
-			this.container.appendChild(this.addFavoriButton);
+		this.container.insertBefore(this.editButton, this.container.firstChild);
+		this.container.appendChild(this.addFavoriButton);
 
 		this.addFavori = function(){
 			var fav = new Favori(this.container, this);
@@ -185,7 +224,9 @@ document.body.onload = function(){
 			}
 
 			var i = 0,
-			currentFav = this.container.firstElementChild.nextElementSibling ; //On ne commence que par le second enfant, le premier étant le titre
+			//On ne commence que par le TROISIÈME enfant, le premier étant le titre, le second le bouton d'édition
+			currentFav = this.container.firstElementChild.nextElementSibling.nextElementSibling ; 
+
 			while(currentFav != view){
 				i++ ;
 				currentFav = currentFav.nextElementSibling ;
@@ -203,43 +244,46 @@ document.body.onload = function(){
 		this.nom = "Nouveau lieu";
 		this.isDefault = false ;
 
+		this.isEditable = false ;
+		this.isEditing = false ;
+
 		// Les autres parametres par défaut seront déterminé par la position courante du device
 
 		/**
 		 *	role -> Définir les coordonées courantes à la création d'un favori
 		 */
 
-		// this.rafraichirPosition = function(onSuccess){
+		/*this.rafraichirPosition = function(onSuccess){
 
-		// 	var error = function(){
-		// 		that.adresse = "1 place Saint Laurent, 38000 Grenoble" ;
-		// 		that.longitude = 5.7322185 ;
-		// 		that.latitude = 45.1978225 ;
-		// 	};
+			var error = function(){
+				that.adresse = "1 place Saint Laurent, 38000 Grenoble" ;
+				that.longitude = 5.7322185 ;
+				that.latitude = 45.1978225 ;
+			};
 
-		// 	api.geo.getPosition(function(position){
+			api.geo.getPosition(function(position){
 
-		// 		that.longitude = position.coords.longitude ;
-		// 		that.latitude = position.coords.latitude ;
+				that.longitude = position.coords.longitude ;
+				that.latitude = position.coords.latitude ;
 
-		// 		api.geo.coder.geocode({'latLng': new google.maps.LatLng(that.latitude, that.longitude)}, function(results, status) {
-		// 			if (status == google.maps.GeocoderStatus.OK) {
-		// 				if (results[0]) {
-		// 					that.adresse = results[0].formatted_address ;
-		// 					that.latitude = results[0].geometry.location.jb ;
-		// 					that.longitude = results[0].geometry.location.kb ;
+				api.geo.coder.geocode({'latLng': new google.maps.LatLng(that.latitude, that.longitude)}, function(results, status) {
+					if (status == google.maps.GeocoderStatus.OK) {
+						if (results[0]) {
+							that.adresse = results[0].formatted_address ;
+							that.latitude = results[0].geometry.location.jb ;
+							that.longitude = results[0].geometry.location.kb ;
 
-		// 					onSuccess();
-		// 				} else {
-		// 					error();
-		// 				}
-		// 			} else {
-		// 				error();
-		// 			}
-		// 		});
+							onSuccess();
+						} else {
+							error();
+						}
+					} else {
+						error();
+					}
+				});
 
-		// 	}, error);
-		// };
+			}, error);
+		};*/
 
 		this.adresse = "1 place Saint Laurent, 38000 Grenoble" ;
 		this.longitude = 5.7322185 ;
@@ -255,6 +299,72 @@ document.body.onload = function(){
 		this.container = document.createElement("div");
 			container.insertBefore(this.container, container.lastChild);
 
+		this.container.onclick = function()
+		{
+			if(that.isEditable && !that.isEditing)
+			{
+				that.setEditing(true);
+			}
+		};
+
+		this.setEditable = function(edit){
+
+			var label = this.static.firstChild;
+
+			if(edit)
+			{
+				this.isEditable = true ;
+
+				label.style.display = "block";
+			}
+			else
+			{
+				this.isEditable = false ;
+				if(this.isEditing){ this.setEditing(false); }
+
+				label.style.display = "none";
+			}
+		};
+
+		this.setEditing = function(edit){
+
+			if(edit)
+			{
+				//Tout d'abord on désactive le favori en cours d'édition
+				var editingView = document.querySelector("#editing");
+
+				if(editingView != undefined){
+
+					Favori.manager.VtoF(editingView).setEditing(false);
+
+				}
+
+				//Puis on rend le nouveau favori en édition
+				this.isEditing = true ;
+				this.setEditable(true) ;
+
+				if(that.dynamic == undefined){
+					that.createDynamic();
+					that.container.appendChild(that.dynamic);
+				}
+
+				that.container.lastChild.style.display = "block" ;
+				that.container.firstChild.style.display = "none" ;
+				that.container.id = "editing";
+			}
+			else
+			{
+				this.isEditing = false ;
+				
+				that.bind();
+
+				that.container.lastChild.style.display = "none" ;
+				that.container.firstChild.style.display = "block" ;
+				that.container.id = "";
+			}
+
+		};
+
 		this.setDefault = function(isDefault){
 
 			this.isDefault = isDefault ;
@@ -267,42 +377,29 @@ document.body.onload = function(){
 
 		this.createStatic = function(onSuccess){
 
-			that.static = document.createElement("div");
-				that.static.className = "favoris" ;
+			this.static = document.createElement("div");
+				this.static.className = "favoris" ;
 
-				var modifier = document.createElement('input');
-					modifier.type = "button" ;
-					modifier.value = "Modifier" ;
-					modifier.className = "right" ;
-
-				modifier.onclick =  function(){
-
-					Favori.disableEditable();
-
-					if(that.dynamic == undefined){
-						that.createDynamic();
-						that.container.appendChild(that.dynamic);
-					}
-
-					Favori.toogleView(that.container);
-
-				};
+				var label = document.createElement("p");
+					label.textContent = "Cliquez pour modifier";
+					label.className = "right" ;
+					label.style.display = "none";
 
 				var nom = document.createElement('h5');
-					nom.textContent = that.nom ;
+					nom.textContent = this.nom ;
 
 				var adresse = document.createElement("p");
-					adresse.textContent = that.adresse ;
+					adresse.textContent = this.adresse ;
 
-			that.static.appendChild(modifier);
-			that.static.appendChild(nom);
-			that.static.appendChild(adresse);
+			this.static.appendChild(label);
+			this.static.appendChild(nom);
+			this.static.appendChild(adresse);
 
 			onSuccess();
 
 			// if(this.longitude == 0 && this.latitude == 0)
 			// {
-			// 	this.rafraichirPosition(adresse);
+			//	this.rafraichirPosition(adresse);
 			// }
 		};
 
@@ -310,17 +407,6 @@ document.body.onload = function(){
 
 			this.dynamic = document.createElement("div");
 				this.dynamic.className = "favoris" ;
-
-				var terminer = document.createElement('input');
-					terminer.type = "button" ;
-					terminer.value = "Enregistrer" ;
-					terminer.className = "right active" ;
-
-				terminer.onclick = function(e){
-
-					Favori.disableEditable();
-
-				};
 
 				var nom = document.createElement('input');
 					nom.className = "h5";
@@ -396,7 +482,6 @@ document.body.onload = function(){
 						}
 					};
 
-			this.dynamic.appendChild(terminer);
 			this.dynamic.appendChild(nom);
 			this.dynamic.appendChild(map);
 			this.dynamic.appendChild(longitude);
@@ -427,7 +512,7 @@ document.body.onload = function(){
 				center: center,
 				zoom: 16,
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
-				 streetViewControl: false
+				streetViewControl: false
 			});
 
 			var marker = new google.maps.Marker({
@@ -466,7 +551,7 @@ document.body.onload = function(){
 
 			adresse.addEventListener('keypress', function(e){
 
-				if(e.keyCode === 13){
+				if(e.keyCode == 13){
 					updateMap({'address': adresse.value});
 				}
 
@@ -478,8 +563,9 @@ document.body.onload = function(){
 						if (results[0]) {
 							adresse.value = results[0].formatted_address ;
 
-							latitude.value = results[0].geometry.location.jb ;
-							longitude.value = results[0].geometry.location.kb ;
+							console.log(results[0].geometry.location)
+							latitude.value = results[0].geometry.location.mb ;
+							longitude.value = results[0].geometry.location.nb ;
 
 							map.setCenter(results[0].geometry.location);
 							marker.setPosition(results[0].geometry.location);
@@ -490,34 +576,6 @@ document.body.onload = function(){
 						alert('Geocoder failed due to: ' + status);
 					}
 				});
-			}
-		};
-
-		Favori.disableEditable = function(){
-
-			var editingView = document.querySelector("#editing");
-			if(editingView != undefined){
-
-				Favori.manager.VtoF(editingView).bind() ;
-				Favori.toogleView(editingView);
-			}
-		};
-
-		Favori.toogleView = function(element){
-
-			if(element.id == "editing")
-			{
-				//et on s'occupe d'abord de la vue
-				element.lastChild.style.display = "none" ;
-				element.firstChild.style.display = "block" ;
-				element.id = "";
-
-			}
-			else
-			{
-				element.firstChild.style.display = "none" ;
-				element.lastChild.style.display = "block" ;
-				element.id = "editing";
 			}
 		};
 
@@ -541,6 +599,8 @@ document.body.onload = function(){
 			//Sans oublier de typer les variables
 			this.latitude = parseFloat(this.latitude);
 			this.longitude = parseFloat(this.longitude);
+
+			d(this.longitude)
 
 			//Puis on hydrate la vue
 				//Le noeud du titre
