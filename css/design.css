@@ -207,37 +207,24 @@ input.collapsed + input.collapsed
 /*-------------------------*/
 /*-------------------------*/
 
-@media screen and (min-width: 800px) {
+@media screen and (min-width: 600px) {
 
     section
     {
         max-width: 1400px ;
-        margin: auto ;
+        width: 95% ;
+        margin: auto;
     }
     
     article
     {
-        margin-top: 20px;
-        padding: 2%;
-    
+        margin: auto ;
+        padding: 5% ;
+
         box-sizing:border-box;
         -moz-box-sizing:border-box; /* Firefox */
 
-        display: inline-block;
-        width: 48% ;
-
-        vertical-align: top; 
-    }
-
-    article:last-child:not(:nth-child(even))
-    {
-        display: block;
-        width: auto ;
-    }
-
-    article:nth-child(odd)
-    {
-        margin-right: 2%;
+        width: 89% ;
     }
 
     .favoris:first-child p
@@ -247,4 +234,31 @@ input.collapsed + input.collapsed
 }
 
 
-/*penser à utliser la propriété flex pour les categories sur les grand écrans*/
+@media screen and (min-width: 1000px) {
+
+    article
+    {
+        margin: 0 ;
+        margin-top: 20px;
+        padding: 2%;
+
+        display: inline-block;
+        width: 48% ;
+
+        vertical-align: top; 
+    }
+
+    article:nth-child(odd)
+    {
+        margin-right: 2%;
+    }
+
+    article:last-child:nth-child(odd)
+    {
+        display: block;
+        width: auto;
+        margin-right: 0 ;
+    }
+
+    
+}
