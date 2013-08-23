@@ -1,8 +1,3 @@
-function d(agr)
-{
-	console.log(agr);
-}
-
 document.body.onload = function(){
 
 	/**
@@ -248,49 +243,11 @@ document.body.onload = function(){
 		this.isEditable = false ;
 		this.isEditing = false ;
 
-		// Les autres parametres par défaut seront déterminé par la position courante du device
-
-		/**
-		 *	role -> Définir les coordonées courantes à la création d'un favori
-		 */
-
-		/*this.rafraichirPosition = function(onSuccess){
-
-			var error = function(){
-				that.adresse = "1 place Saint Laurent, 38000 Grenoble" ;
-				that.longitude = 5.7322185 ;
-				that.latitude = 45.1978225 ;
-			};
-
-			api.geo.getPosition(function(position){
-
-				that.longitude = position.coords.longitude ;
-				that.latitude = position.coords.latitude ;
-
-				api.geo.coder.geocode({'latLng': new google.maps.LatLng(that.latitude, that.longitude)}, function(results, status) {
-					if (status == google.maps.GeocoderStatus.OK) {
-						if (results[0]) {
-							that.adresse = results[0].formatted_address ;
-							that.latitude = results[0].geometry.location.jb ;
-							that.longitude = results[0].geometry.location.kb ;
-
-							onSuccess();
-						} else {
-							error();
-						}
-					} else {
-						error();
-					}
-				});
-
-			}, error);
-		};*/
-
 		this.adresse = "1 place Saint Laurent, 38000 Grenoble" ;
 		this.longitude = 5.7322185 ;
 		this.latitude = 45.1978225 ;
 
-		this.listeIntervals = [];
+		this.intervals = new IntervalsManager();
 
 		//On se sert de cette liste pour hydrater l'objet à partir des vues contenues dans le tableau
 		this.listeInputs = {};
@@ -414,10 +371,13 @@ document.body.onload = function(){
 					nom.type = "text" ;
 					nom.value = this.nom ;
 
+				var adresseContainer = document.createElement("div");
 				var adresse = document.createElement("input");
 					adresse.className = "p collapsed" ;
 					adresse.type = "text";
 					adresse.value = this.adresse ;
+
+					adresseContainer.appendChild(adresse);
 
 				var map = document.createElement("div");
 					map.className = "map";
@@ -429,6 +389,13 @@ document.body.onload = function(){
 				var latitude = document.createElement("input");
 					latitude.type = "hidden" ;
 					latitude.value = this.latitude ;
+
+				var horaires = document.createElement("div");
+					horaires.className = "horaires";
+
+				//On dit au gestionnaire des intervals où s'afficher
+					this.intervals.afficher(horaires);
+
 
 				var isDefaultContainer = document.createElement("div");
 					isDefaultContainer.className = "noPadLeft" ;
@@ -484,11 +451,13 @@ document.body.onload = function(){
 					};
 
 			this.dynamic.appendChild(nom);
-			this.dynamic.appendChild(adresse);
+			this.dynamic.appendChild(adresseContainer);
 			this.dynamic.appendChild(map);
 			this.dynamic.appendChild(longitude);
 			this.dynamic.appendChild(latitude);
 			
+			this.dynamic.appendChild(horaires);
+
 			this.dynamic.appendChild(isDefaultContainer);
 			this.dynamic.appendChild(deleteButton);
 
@@ -565,7 +534,6 @@ document.body.onload = function(){
 						if (results[0]) {
 							adresse.value = results[0].formatted_address ;
 
-							console.log(results[0].geometry.location)
 							latitude.value = results[0].geometry.location.mb ;
 							longitude.value = results[0].geometry.location.nb ;
 
@@ -601,8 +569,6 @@ document.body.onload = function(){
 			//Sans oublier de typer les variables
 			this.latitude = parseFloat(this.latitude);
 			this.longitude = parseFloat(this.longitude);
-
-			d(this.longitude)
 
 			//Puis on hydrate la vue
 				//Le noeud du titre
@@ -640,6 +606,172 @@ document.body.onload = function(){
 				"adresse": this.adresse,
 				"latitude": this.latitude,
 				"longitude": this.longitude
+			};
+		};
+
+		this.unserialize = function(args)
+		{
+			for(var arg in args)
+			{
+				this[arg] = args[arg] ;
+			}
+		};
+	}
+
+	function IntervalsManager()
+	{
+		//Chaque case de la liste contient un jour différent
+		this.listeIntervals = {
+
+			"lundi": [
+				['12:34', "13:45"],
+				["16:05", "17:55"]
+			],
+
+			"samedi": [
+				['12:34', "13:45"],
+				["16:05", "17:55"]
+			]
+
+		} ;
+
+		this.intervalDefiner = new intervalDefiner(this.pushList);
+
+		this.afficher = function(container)
+		{
+			this.container = container ;
+
+			for(var jour in this.listeIntervals)
+			{
+				var journee = document.createElement("div");
+				var titre = document.createElement("h5");
+					titre.textContent = jour ;
+
+				var listeIntervals = document.createElement("ul");
+
+				for (var i = 0, c = this.listeIntervals[jour].length ; i < c; i++) {
+
+					var deleteButton = document.createElement("a");
+						deleteButton.href = "#" ;
+
+						deleteButton.appendChild(
+							document.createTextNode("Supprimer")
+						);
+
+					var interval = document.createElement("li");
+						interval.appendChild(deleteButton);
+						interval.appendChild(
+							document.createTextNode(this.listeIntervals[jour][i][0] + " à " + this.listeIntervals[jour][i][1])
+						) ;
+
+					listeIntervals.appendChild(interval);
+				}
+
+				journee.appendChild(titre);
+				journee.appendChild(listeIntervals);
+
+				this.container.appendChild(journee);
+			}
+		};
+
+		this.addInterval = function(args)
+		{
+			this.intervalDefiner.defineInterval();
+		};
+
+		this.pushList = function(args)
+		{
+			this.listeIntervals.push(new Interval(args)) ;
+		};
+
+		//Gestion de la persistance des données
+
+		this.serialize = function()
+		{
+			return {
+
+			};
+		};
+
+		this.unserialize = function(args)
+		{
+			for(var arg in args)
+			{
+				this[arg] = args[arg] ;
+			}
+		};
+	}
+
+	function intervalDefiner(callback)
+	{
+
+		this.callback = callback ;
+		this.interval = {} ;
+
+		this.defineInterval = function()
+		{
+
+		};
+
+		this.createView = function()
+		{
+
+		};
+
+		this.bind = function()
+		{
+
+		};
+
+		this.onSuccess = function()
+		{
+			this.callback(this.interval);
+		};
+
+	}
+
+	function Interval(interval)
+	{
+		this.debut = new Horaire(
+			interval.debut.heure,
+			interval.debut.minutes
+		);
+		
+		this.fin = new Horaire(
+			interval.fin.heure,
+			interval.fin.minutes
+		);
+
+		//Gestion de la persistance des données
+
+		this.serialize = function()
+		{
+			return {
+
+			};
+		};
+
+		this.unserialize = function(args)
+		{
+			for(var arg in args)
+			{
+				this[arg] = args[arg] ;
+			}
+		};
+	}
+
+	function Horaire(heure, minutes)
+	{
+
+		this.heure = 0 + parseInt(heure, 10) % 24;
+		this.minutes = 0 + parseInt(minutes, 10) % 60;
+
+		//Gestion de la persistance des données
+
+		this.serialize = function()
+		{
+			return {
+
 			};
 		};
 

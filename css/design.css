@@ -198,10 +198,29 @@ input.collapsed + input.collapsed
     display: none ;
 }
 
-.favoris:last-child input:nth-child(2)
+.favoris:last-child > div:first-child input:first-child
 {
     width: 60% ;
     max-width: 300px ;
+}
+
+.favoris .horaires ul
+{
+    list-style-type: none ;
+}
+
+.favoris .horaires li::before
+{
+    content: '- '
+}
+
+.favoris .horaires li :first-child
+{
+    float: right ;
+    text-align: right ;
+
+    font-size: 80% ;
+    color: #E13C3F;
 }
 
 /*-------------------------*/
