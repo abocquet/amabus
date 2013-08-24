@@ -103,6 +103,66 @@ document.body.onload = function(){
 		return element ;
 	}
 
+	function LightBox(){
+
+		var that = this ;
+
+		this.background = document.createElement("div");
+			this.background.id = "lightbox" ;
+			this.background.style.display = "none";
+
+		this.foreground = document.createElement("div");
+			this.foreground.className = "lightbox_content";
+
+		this.background.addEventListener('click', function(e){
+
+			if (e.currentTarget == this) {
+				that.hide();
+			}
+		}, false);
+
+		this.foreground.addEventListener('click', function(e){ e.stopPropagation(); }, false);
+
+		this.background.appendChild(this.foreground);
+		document.body.appendChild(this.background);
+
+		this.show = function()
+		{
+			document.body.className = "stop-scrolling";
+			this.background.style.display = "block";
+		};
+
+		this.hide = function()
+		{
+			document.body.className = "";
+			this.background.style.display = "none";
+		};
+
+		this.setContent = function(HTMLElement)
+		{
+			var first = this.foreground.firstChild ;
+
+			while(first)
+			{
+				this.foreground.removeChild(first);
+				first = first.nextElementSibling ;
+			}
+
+			var fermer = document.createElement("a");
+				fermer.className = "right alert" ;
+				fermer.textContent = "Fermer" ;
+				fermer.href = "#"
+				fermer.onclick = function()
+				{
+					that.hide();
+					return false ;
+				};
+
+			this.foreground.appendChild(fermer);
+			this.foreground.appendChild(HTMLElement);
+		};
+	}
+
 	function FavorisManager(container){
 
 		//Gestion des favoris
@@ -229,7 +289,6 @@ document.body.onload = function(){
 			}
 
 			return this.listeFavoris[i] ;
-
 		};
 	}
 
@@ -247,7 +306,7 @@ document.body.onload = function(){
 		this.longitude = 5.7322185 ;
 		this.latitude = 45.1978225 ;
 
-		this.intervals = new IntervalsManager();
+		this.intervals = new IntervalsManager(this);
 
 		//On se sert de cette liste pour hydrater l'objet à partir des vues contenues dans le tableau
 		this.listeInputs = {};
@@ -618,19 +677,59 @@ document.body.onload = function(){
 		};
 	}
 
-	function IntervalsManager()
+	function IntervalsManager(parent)
 	{
+		var that = this ;
+		this.parent = parent ;
 		//Chaque case de la liste contient un jour différent
 		this.listeIntervals = {
 
 			"lundi": [
-				['12:34', "13:45"],
-				["16:05", "17:55"]
+				new Interval({
+					debut : {
+						heure: 12,
+						minutes : 34
+					},
+					fin : {
+						heure : 13,
+						minutes : 45
+					}
+				}),
+
+				new Interval({
+					debut : {
+						heure: 14,
+						minutes :38
+					},
+					fin : {
+						heure : 15,
+						minutes : 49
+					}
+				})
 			],
 
 			"samedi": [
-				['12:34', "13:45"],
-				["16:05", "17:55"]
+				new Interval({
+					debut : {
+						heure: 12,
+						minutes : 34
+					},
+					fin : {
+						heure : 13,
+						minutes : 45
+					}
+				}),
+
+				new Interval({
+					debut : {
+						heure: 14,
+						minutes :38
+					},
+					fin : {
+						heure : 15,
+						minutes : 49
+					}
+				})
 			]
 
 		} ;
@@ -650,21 +749,7 @@ document.body.onload = function(){
 				var listeIntervals = document.createElement("ul");
 
 				for (var i = 0, c = this.listeIntervals[jour].length ; i < c; i++) {
-
-					var deleteButton = document.createElement("a");
-						deleteButton.href = "#" ;
-
-						deleteButton.appendChild(
-							document.createTextNode("Supprimer")
-						);
-
-					var interval = document.createElement("li");
-						interval.appendChild(deleteButton);
-						interval.appendChild(
-							document.createTextNode(this.listeIntervals[jour][i][0] + " à " + this.listeIntervals[jour][i][1])
-						) ;
-
-					listeIntervals.appendChild(interval);
+					this.listeIntervals[jour][i].afficher(listeIntervals);
 				}
 
 				journee.appendChild(titre);
@@ -672,11 +757,23 @@ document.body.onload = function(){
 
 				this.container.appendChild(journee);
 			}
+
+			var ajouter = document.createElement("input");
+				ajouter.className = "centered";
+				ajouter.type = "button";
+				ajouter.value = "Ajouter un interval de présence";
+
+				ajouter.onclick = function()
+				{
+					that.addInterval();
+				};
+
+			this.container.appendChild(ajouter);
 		};
 
-		this.addInterval = function(args)
+		this.addInterval = function()
 		{
-			this.intervalDefiner.defineInterval();
+			this.intervalDefiner.defineInterval( this.parent.nom );
 		};
 
 		this.pushList = function(args)
@@ -708,13 +805,109 @@ document.body.onload = function(){
 		this.callback = callback ;
 		this.interval = {} ;
 
-		this.defineInterval = function()
+		this.defineInterval = function(favName)
 		{
-
+			var lightbox = new LightBox();
+			lightbox.setContent( this.createView(favName) );
+			lightbox.show() ;
 		};
 
-		this.createView = function()
+		this.createView = function(favName)
 		{
+			var container = document.createElement("div");
+
+			//La prsentation
+			var titre = document.createElement("h3");
+				titre.textContent = "Ajouter un horaire" ;
+
+			var text = document.createElement("p") ;
+				text.textContent = "Je suis à " + favName + " le " ;
+
+			//Les jours
+			var day = document.createElement("p");
+
+				var listeJours = [ "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"] ;
+
+				for (var i = 0, c = listeJours.length ; i < c; i++) {
+
+					var checkbox = document.createElement("input");
+						checkbox.type = "checkbox" ;
+						checkbox.id = listeJours[i] ;
+						checkbox.value = i ;
+
+					var label = document.createElement("label") ;
+						label.setAttribute("for", listeJours[i]);
+						label.textContent = listeJours[i] ;
+
+						day.appendChild(checkbox);
+						day.appendChild(label);
+				}
+
+			//les heures
+			function createTimeType(decalage)
+			{
+				var heureType = document.createElement("select"), heure = new Date().getHours() + decalage;
+
+				for(var h=0 ; h < 24 ; h++)
+				{
+					var option = document.createElement("option");
+						option.value = h ;
+						option.textContent = h;
+
+					if(option.value == heure)
+					{
+						option.selected = "selected" ;
+					}
+
+					heureType.appendChild(option);
+				}
+
+				var minutesType = document.createElement("select"), minutes = new Date().getMinutes();
+				minutes = minutes - (minutes % 5);
+
+				for(var m=0 ; m < 60 ; m += 5)
+				{
+					var option = document.createElement("option");
+						option.value = m ;
+						option.textContent = m;
+
+					if(option.value == minutes)
+					{
+						option.selected = "selected" ;
+					}
+
+					minutesType.appendChild(option);
+				}
+
+				var timeType = document.createElement("span");
+					timeType.appendChild(heureType);
+					timeType.appendChild(document.createTextNode(":"));
+					timeType.appendChild(minutesType);
+
+				return timeType ;
+			}
+
+			var temps = document.createElement("p");
+
+				temps.appendChild(document.createTextNode("De "));
+				temps.appendChild(createTimeType(0));
+				temps.appendChild(document.createTextNode(" à "));
+				temps.appendChild(createTimeType(1))
+
+			//Le bouton de validation
+			var terminer = document.createElement("input");
+				terminer.type = 'button';
+				terminer.value = "Terminer";
+				terminer.className = "centered";
+
+			//On compile le tout et on envoie
+			container.appendChild(titre);
+			container.appendChild(text);
+			container.appendChild(day);
+			container.appendChild(temps);
+			container.appendChild(terminer)
+
+			return container ;
 
 		};
 
@@ -727,7 +920,6 @@ document.body.onload = function(){
 		{
 			this.callback(this.interval);
 		};
-
 	}
 
 	function Interval(interval)
@@ -741,6 +933,24 @@ document.body.onload = function(){
 			interval.fin.heure,
 			interval.fin.minutes
 		);
+
+		this.afficher = function(container)
+		{
+			var deleteButton = document.createElement("a");
+				deleteButton.href = "#" ;
+
+				deleteButton.appendChild(
+					document.createTextNode("Supprimer")
+				);
+
+			var interval = document.createElement("li");
+				interval.appendChild(deleteButton);
+				interval.appendChild(
+					document.createTextNode("De " + this.debut.toString() + " à " + this.fin.toString())
+				) ;
+
+			container.appendChild(interval);
+		};
 
 		//Gestion de la persistance des données
 
@@ -765,6 +975,11 @@ document.body.onload = function(){
 
 		this.heure = 0 + parseInt(heure, 10) % 24;
 		this.minutes = 0 + parseInt(minutes, 10) % 60;
+
+		this.toString = function()
+		{
+			return this.heure + ":" + this.minutes ;
+		};
 
 		//Gestion de la persistance des données
 
@@ -791,4 +1006,5 @@ document.body.onload = function(){
 	var mainManager = new FavorisManager(document.querySelector("#favoris"));
 	Favori.manager = mainManager ;
 	mainManager.unserialize();
+	
 };
