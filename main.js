@@ -9,8 +9,6 @@ document.body.onload = function(){
 
 	Array.prototype.unset = function(val){
 
-		val.effacer();
-
 		var index = this.indexOf(val);
 		if(index > -1)
 		{
@@ -230,6 +228,7 @@ document.body.onload = function(){
 
 		this.removeFavori = function(val){
 
+			val.effacer();
 			this.listeFavoris.unset(val);
 
 			if(this.listeFavoris.length == 0){
@@ -708,6 +707,10 @@ document.body.onload = function(){
 				})
 			],
 
+			"mardi": [],
+			"mercredi": [],
+			"vendredi": [],
+
 			"samedi": [
 				new Interval({
 					debut : {
@@ -730,11 +733,10 @@ document.body.onload = function(){
 						minutes : 49
 					}
 				})
-			]
+			],
 
+			"dimanche": []
 		} ;
-
-		this.intervalDefiner = new intervalDefiner(this.pushList);
 
 		this.afficher = function(container)
 		{
@@ -742,20 +744,23 @@ document.body.onload = function(){
 
 			for(var jour in this.listeIntervals)
 			{
-				var journee = document.createElement("div");
-				var titre = document.createElement("h5");
-					titre.textContent = jour ;
+				if(this.listeIntervals[jour].length != 0)
+				{
+					var journee = document.createElement("div");
+					var titre = document.createElement("h5");
+						titre.textContent = jour ;
 
-				var listeIntervals = document.createElement("ul");
+					var listeIntervalsVue = document.createElement("ul");
 
-				for (var i = 0, c = this.listeIntervals[jour].length ; i < c; i++) {
-					this.listeIntervals[jour][i].afficher(listeIntervals);
+					for (var i = 0, c = this.listeIntervals[jour].length ; i < c; i++) {
+						this.listeIntervals[jour][i].afficher(listeIntervalsVue);
+					}
+
+					journee.appendChild(titre);
+					journee.appendChild(listeIntervalsVue);
+
+					this.container.appendChild(journee);
 				}
-
-				journee.appendChild(titre);
-				journee.appendChild(listeIntervals);
-
-				this.container.appendChild(journee);
 			}
 
 			var ajouter = document.createElement("input");
@@ -778,7 +783,12 @@ document.body.onload = function(){
 
 		this.pushList = function(args)
 		{
-			this.listeIntervals.push(new Interval(args)) ;
+			for(var i = 0, c = args.jours.length ; i < c ; i++)
+			{
+				console.log(args.jours[i])
+				that.listeIntervals[args.jours[i]].push(new Interval(args)) ;
+			}
+			console.log(that.listeIntervals)
 		};
 
 		//Gestion de la persistance des données
@@ -797,19 +807,23 @@ document.body.onload = function(){
 				this[arg] = args[arg] ;
 			}
 		};
+
+		this.intervalDefiner = new intervalDefiner(this.pushList);
 	}
 
 	function intervalDefiner(callback)
 	{
+		var that = this ;
 
 		this.callback = callback ;
 		this.interval = {} ;
+		this.inputs = {} ; //Pour pouvoir récupérer facilement les options choisies par l'utilisateur, on sauvergarde les champs
 
 		this.defineInterval = function(favName)
 		{
-			var lightbox = new LightBox();
-			lightbox.setContent( this.createView(favName) );
-			lightbox.show() ;
+			this.lightbox = new LightBox();
+			this.lightbox.setContent( this.createView(favName) );
+			this.lightbox.show() ;
 		};
 
 		this.createView = function(favName)
@@ -826,21 +840,33 @@ document.body.onload = function(){
 			//Les jours
 			var day = document.createElement("p");
 
+				this.inputs.jours = {} ;
 				var listeJours = [ "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"] ;
+				var dayId = new Date().getDay();
+				dayId = dayId > 0 ? dayId-- : 6 ;
 
 				for (var i = 0, c = listeJours.length ; i < c; i++) {
 
+					var jour = listeJours[i] ;
+
 					var checkbox = document.createElement("input");
 						checkbox.type = "checkbox" ;
-						checkbox.id = listeJours[i] ;
+						checkbox.id = jour ;
 						checkbox.value = i ;
 
+						if(i == dayId)
+						{
+							checkbox.checked = "checked" ;
+						}
+
 					var label = document.createElement("label") ;
-						label.setAttribute("for", listeJours[i]);
-						label.textContent = listeJours[i] ;
+						label.setAttribute("for", jour);
+						label.textContent = jour ;
 
 						day.appendChild(checkbox);
 						day.appendChild(label);
+
+						this.inputs.jours[jour] = checkbox ;
 				}
 
 			//les heures
@@ -884,41 +910,68 @@ document.body.onload = function(){
 					timeType.appendChild(document.createTextNode(":"));
 					timeType.appendChild(minutesType);
 
-				return timeType ;
+				var inputs = {
+					"heure" : heureType,
+					"minutes" : minutesType
+				};
+
+				return { "html": timeType, "inputs": inputs } ;
 			}
 
 			var temps = document.createElement("p");
 
+				var debut = createTimeType(0);
+				var fin = createTimeType(1);
+
 				temps.appendChild(document.createTextNode("De "));
-				temps.appendChild(createTimeType(0));
+				temps.appendChild(debut.html);
 				temps.appendChild(document.createTextNode(" à "));
-				temps.appendChild(createTimeType(1))
+				temps.appendChild(fin.html);
+
+				this.inputs.debut = debut.inputs;
+				this.inputs.fin = fin.inputs;
 
 			//Le bouton de validation
 			var terminer = document.createElement("input");
 				terminer.type = 'button';
 				terminer.value = "Terminer";
 				terminer.className = "centered";
+				terminer.onclick = function(){
+					that.lightbox.hide();
+					that.bind();
+				};
 
 			//On compile le tout et on envoie
 			container.appendChild(titre);
 			container.appendChild(text);
 			container.appendChild(day);
 			container.appendChild(temps);
-			container.appendChild(terminer)
+			container.appendChild(terminer);
 
 			return container ;
-
 		};
 
 		this.bind = function()
 		{
 
-		};
+			this.interval.debut = {} ;
+				this.interval.debut.heure = this.inputs.debut.heure.options[this.inputs.debut.heure.selectedIndex].value;
+				this.interval.debut.minutes = this.inputs.debut.minutes.options[this.inputs.debut.minutes.selectedIndex].value;
 
-		this.onSuccess = function()
-		{
-			this.callback(this.interval);
+			this.interval.fin = {} ;
+				this.interval.fin.heure = this.inputs.fin.heure.options[this.inputs.fin.heure.selectedIndex].value;
+				this.interval.fin.minutes = this.inputs.fin.minutes.options[this.inputs.fin.minutes.selectedIndex].value;
+
+			this.interval.jours = [];
+			for(var jour in this.inputs.jours)
+			{
+				if(this.inputs.jours[jour].checked == true)
+				{
+					this.interval.jours.push(jour);
+				}
+			}
+
+			that.callback(this.interval);
 		};
 	}
 
@@ -957,7 +1010,8 @@ document.body.onload = function(){
 		this.serialize = function()
 		{
 			return {
-
+				"debut": this.debut.serialize(),
+				"fin": this.fin.serialize()
 			};
 		};
 
@@ -986,7 +1040,8 @@ document.body.onload = function(){
 		this.serialize = function()
 		{
 			return {
-
+				"heure": this.heure,
+				"minutes": this.minutes
 			};
 		};
 
