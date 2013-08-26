@@ -638,7 +638,6 @@ document.body.onload = function(){
 				currentElement.textContent = this.adresse ;
 
 			Favori.manager.serialize();
-
 		};
 
 		//La création de la vue dynamique se fait au clic sur le bouton "modifier"
@@ -680,6 +679,7 @@ document.body.onload = function(){
 	{
 		var that = this ;
 		this.parent = parent ;
+
 		//Chaque case de la liste contient un jour différent
 		this.listeIntervals = {
 
@@ -741,6 +741,7 @@ document.body.onload = function(){
 		this.afficher = function(container)
 		{
 			this.container = container ;
+			this.container.innerHTML = "" ;
 
 			for(var jour in this.listeIntervals)
 			{
@@ -753,7 +754,24 @@ document.body.onload = function(){
 					var listeIntervalsVue = document.createElement("ul");
 
 					for (var i = 0, c = this.listeIntervals[jour].length ; i < c; i++) {
-						this.listeIntervals[jour][i].afficher(listeIntervalsVue);
+						
+						var interval = this.listeIntervals[jour][i];
+						var intervalVue = interval.afficher(listeIntervalsVue);
+
+						var deleteButton = document.createElement("a");
+							deleteButton.href = "#" ;
+							deleteButton.textContent = "Supprimer" ;
+							deleteButton.setAttribute("data-id", i);
+							deleteButton.setAttribute("data-day", jour);
+
+							deleteButton.addEventListener("click", function(e){
+								
+								e.preventDefault();
+								that.removeInterval(this.getAttribute("data-day"), this.getAttribute("data-id"));
+
+							}, false);
+
+							intervalVue.insertBefore(deleteButton, intervalVue.firstChild);
 					}
 
 					journee.appendChild(titre);
@@ -774,10 +792,19 @@ document.body.onload = function(){
 				};
 
 			this.container.appendChild(ajouter);
+
 		};
 
-		this.addInterval = function()
+		this.removeInterval = function(jour, id)
 		{
+			var interval = this.listeIntervals[jour][id];
+			this.listeIntervals[jour].unset(interval);
+			this.afficher(this.container);
+
+		};
+
+		this.addInterval = function(){
+
 			this.intervalDefiner.defineInterval( this.parent.nom );
 		};
 
@@ -785,16 +812,16 @@ document.body.onload = function(){
 		{
 			for(var i = 0, c = args.jours.length ; i < c ; i++)
 			{
-				console.log(args.jours[i])
 				that.listeIntervals[args.jours[i]].push(new Interval(args)) ;
 			}
-			console.log(that.listeIntervals)
+
+			that.afficher(that.container);
+
 		};
 
 		//Gestion de la persistance des données
 
-		this.serialize = function()
-		{
+		this.serialize = function(){
 			return {
 
 			};
@@ -843,7 +870,7 @@ document.body.onload = function(){
 				this.inputs.jours = {} ;
 				var listeJours = [ "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"] ;
 				var dayId = new Date().getDay();
-				dayId = dayId > 0 ? dayId-- : 6 ;
+				dayId = dayId > 0 ? dayId - 1 : 6 ;
 
 				for (var i = 0, c = listeJours.length ; i < c; i++) {
 
@@ -989,20 +1016,20 @@ document.body.onload = function(){
 
 		this.afficher = function(container)
 		{
-			var deleteButton = document.createElement("a");
-				deleteButton.href = "#" ;
-
-				deleteButton.appendChild(
-					document.createTextNode("Supprimer")
-				);
-
 			var interval = document.createElement("li");
-				interval.appendChild(deleteButton);
 				interval.appendChild(
 					document.createTextNode("De " + this.debut.toString() + " à " + this.fin.toString())
 				) ;
 
-			container.appendChild(interval);
+			this.container = container ;
+			this.container.appendChild(interval);
+
+			return interval;
+		};
+
+		this.supprimer = function()
+		{
+			this.container.parentNode.removeChild(this.container);
 		};
 
 		//Gestion de la persistance des données
