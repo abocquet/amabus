@@ -188,6 +188,8 @@ document.body.onload = function(){
 					{
 						that.listeFavoris[i].setEditable(true);
 					}
+
+					that.addFavoriButton.style.display =  "block" ;
 				}
 				else
 				{
@@ -198,6 +200,8 @@ document.body.onload = function(){
 					{
 						that.listeFavoris[i].setEditable(false);
 					}
+
+					that.addFavoriButton.style.display =  "none" ;
 				}
 				
 			};
@@ -210,6 +214,8 @@ document.body.onload = function(){
 			this.addFavoriButton.onclick = function(){
 				that.addFavori();
 			};
+
+			this.addFavoriButton.style.display =  "none" ;
 
 		this.container.insertBefore(this.editButton, this.container.firstChild);
 		this.container.appendChild(this.addFavoriButton);
@@ -305,7 +311,7 @@ document.body.onload = function(){
 		this.longitude = 5.7322185 ;
 		this.latitude = 45.1978225 ;
 
-		this.intervals = new IntervalsManager(this);
+		this.intervals = new IntervalsManager();
 
 		//On se sert de cette liste pour hydrater l'objet à partir des vues contenues dans le tableau
 		this.listeInputs = {};
@@ -662,7 +668,8 @@ document.body.onload = function(){
 				"isDefault": this.isDefault,
 				"adresse": this.adresse,
 				"latitude": this.latitude,
-				"longitude": this.longitude
+				"longitude": this.longitude,
+				"intervals": this.intervals.serialize()
 			};
 		};
 
@@ -670,73 +677,23 @@ document.body.onload = function(){
 		{
 			for(var arg in args)
 			{
-				this[arg] = args[arg] ;
+				if(arg == "intervals")
+				{
+					this[arg] = new IntervalsManager();
+					this[arg].unserialize(args[arg]);
+				}
+				else
+				{
+					this[arg] = args[arg] ;
+				}
 			}
 		};
 	}
 
-	function IntervalsManager(parent)
+	function IntervalsManager()
 	{
 		var that = this ;
-		this.parent = parent ;
-
-		//Chaque case de la liste contient un jour différent
-		this.listeIntervals = {
-
-			"lundi": [
-				new Interval({
-					debut : {
-						heure: 12,
-						minutes : 34
-					},
-					fin : {
-						heure : 13,
-						minutes : 45
-					}
-				}),
-
-				new Interval({
-					debut : {
-						heure: 14,
-						minutes :38
-					},
-					fin : {
-						heure : 15,
-						minutes : 49
-					}
-				})
-			],
-
-			"mardi": [],
-			"mercredi": [],
-			"vendredi": [],
-
-			"samedi": [
-				new Interval({
-					debut : {
-						heure: 12,
-						minutes : 34
-					},
-					fin : {
-						heure : 13,
-						minutes : 45
-					}
-				}),
-
-				new Interval({
-					debut : {
-						heure: 14,
-						minutes :38
-					},
-					fin : {
-						heure : 15,
-						minutes : 49
-					}
-				})
-			],
-
-			"dimanche": []
-		} ;
+		this.listeIntervals = {};
 
 		this.afficher = function(container)
 		{
@@ -800,18 +757,22 @@ document.body.onload = function(){
 			var interval = this.listeIntervals[jour][id];
 			this.listeIntervals[jour].unset(interval);
 			this.afficher(this.container);
-
 		};
 
 		this.addInterval = function(){
 
-			this.intervalDefiner.defineInterval( this.parent.nom );
+			this.intervalDefiner.defineInterval();
 		};
 
 		this.pushList = function(args)
 		{
 			for(var i = 0, c = args.jours.length ; i < c ; i++)
 			{
+				if(typeof that.listeIntervals[args.jours[i]] == "undefined")
+				{
+					that.listeIntervals[args.jours[i]] = [];
+				}
+
 				that.listeIntervals[args.jours[i]].push(new Interval(args)) ;
 			}
 
@@ -822,16 +783,43 @@ document.body.onload = function(){
 		//Gestion de la persistance des données
 
 		this.serialize = function(){
-			return {
+			
+			var listeSerialize = {};
 
-			};
+			for(var jour in this.listeIntervals)
+			{
+				if(this.listeIntervals[jour].length > 0)
+				{
+					if(typeof listeSerialize[jour] == "undefined")
+					{
+						listeSerialize[jour] = [];
+					}
+
+					for (var i = 0, c = this.listeIntervals[jour].length ; i < c; i++) {
+						listeSerialize[jour].push(this.listeIntervals[jour][i].serialize());
+					}
+				}
+			}
+
+
+			return listeSerialize ;
 		};
 
-		this.unserialize = function(args)
+		this.unserialize = function(listeUnserialize)
 		{
-			for(var arg in args)
+			for(var jour in listeUnserialize)
 			{
-				this[arg] = args[arg] ;
+				if(typeof this.listeIntervals[jour] == "undefined")
+				{
+					this.listeIntervals[jour] = [];
+				}
+
+				for (var i = 0, c = listeUnserialize[jour].length ; i < c; i++) {
+					console.log(listeUnserialize);
+					var interval = new Interval(listeUnserialize[jour][i]) ;
+					this.listeIntervals[jour].push(interval);
+
+				}
 			}
 		};
 
@@ -862,13 +850,13 @@ document.body.onload = function(){
 				titre.textContent = "Ajouter un horaire" ;
 
 			var text = document.createElement("p") ;
-				text.textContent = "Je suis à " + favName + " le " ;
+				text.textContent = "Je suis à "/* + favName + "*/ + " ce favori le " ;
 
 			//Les jours
 			var day = document.createElement("p");
 
 				this.inputs.jours = {} ;
-				var listeJours = [ "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"] ;
+				var listeJours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"] ;
 				var dayId = new Date().getDay();
 				dayId = dayId > 0 ? dayId - 1 : 6 ;
 
@@ -1025,11 +1013,6 @@ document.body.onload = function(){
 			this.container.appendChild(interval);
 
 			return interval;
-		};
-
-		this.supprimer = function()
-		{
-			this.container.parentNode.removeChild(this.container);
 		};
 
 		//Gestion de la persistance des données
