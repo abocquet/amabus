@@ -17,7 +17,7 @@ document.body.onload = function(){
 	};
 
 	// Pour éviter de se retaper le code à chaque fois 
-	api = {
+	var api = {
 		ajx : {
 
 			getJSON : function(chemin, fonction){
@@ -815,7 +815,6 @@ document.body.onload = function(){
 				}
 
 				for (var i = 0, c = listeUnserialize[jour].length ; i < c; i++) {
-					console.log(listeUnserialize);
 					var interval = new Interval(listeUnserialize[jour][i]) ;
 					this.listeIntervals[jour].push(interval);
 
