@@ -16,15 +16,26 @@ document.body.onload = function(){
 		}
 	};
 
+	/**
+	 *	role -> retourne le prochain frère de l'élément spécifié du type DOM spécifié
+	 *
+	 *	GET @string : tag -> name of the tag
+	 *		@HTMLElement : element -> currentChild
+	 *  Returns: @HTMLElement
+	 */
+
+	function giveNextTag(tag, element){
+
+		tag = tag.toUpperCase() ;
+		do { element = element.nextElementSibling ; }
+		while(element.tagName != tag);
+
+		return element ;
+	}
+
 	// Pour éviter de se retaper le code à chaque fois 
 	var api = {
 		ajx : {
-
-			getJSON : function(chemin, fonction){
-				return this.getFile(chemin, function(response){
-					return JSON.parse(response);
-				});
-			},
 
 			getFile : function(chemin, fonction)
 			{
@@ -38,8 +49,21 @@ document.body.onload = function(){
 					}
 				};
 				xhr.send(); // La requête est prête, on envoie tout !
-			}
+			},
 
+			getXML : function(chemin, fonction)
+			{
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', chemin);
+				xhr.setRequestHeader("X-Requested-With","XMLHttpRequest");
+
+				xhr.onreadystatechange = function(){
+					if (xhr.readyState == 4 && xhr.status == 200) {
+						fonction(xhr.responseXML);
+					}
+				};
+				xhr.send(); // La requête est prête, on envoie tout !
+			}
 		},
 
 		geo : {
@@ -83,23 +107,6 @@ document.body.onload = function(){
 			coder : new google.maps.Geocoder()
 		}
 	};
-
-	/**
-	 *	role -> retourne le prochain frère de l'élément spécifié du type DOM spécifié
-	 *
-	 *	GET @string : tag -> name of the tag
-	 *		@HTMLElement : element -> currentChild
-	 *  Returns: @HTMLElement
-	 */
-
-	function giveNextTag(tag, element){
-
-		tag = tag.toUpperCase() ;
-		do { element = element.nextElementSibling ; }
-		while(element.tagName != tag);
-
-		return element ;
-	}
 
 	function LightBox(){
 
@@ -169,6 +176,9 @@ document.body.onload = function(){
 		this.isEditing = false ;
 		this.container = container ;
 
+		//Un semblant de pattern singleton
+		Favori.manager = this ;
+
 		this.editButton = document.createElement("input");
 			this.editButton.type = "button" ;
 			this.editButton.value = "Modifier" ;
@@ -220,13 +230,45 @@ document.body.onload = function(){
 		this.container.insertBefore(this.editButton, this.container.firstChild);
 		this.container.appendChild(this.addFavoriButton);
 
+		this.getCurrentFavoris = function(anticipation)
+		{
+			var listeCurrent = [] ;
+			var defaultFavori ;
+
+			for (var i = 0, c = this.listeFavoris.length ; i < c; i++) {
+				if(this.listeFavoris[i].isCurrent(anticipation))
+				{
+					listeCurrent.push(this.listeFavoris[i]);
+				}
+
+				if(this.listeFavoris[i].isDefault)
+				{
+					defaultFavori = this.listeFavoris[i] ;
+				}
+			}
+
+			if(listeCurrent.length > 0)
+			{
+				return listeCurrent ;
+			}
+			else
+			{
+				return [defaultFavori] ;
+			}
+
+		};
+
 		this.addFavori = function(){
+			console.log(this)
+
 			var fav = new Favori(this.container, this);
 			fav.afficher();
 
 			this.listeFavoris.push(fav);
 			if(this.listeFavoris.length == 1){ fav.setDefault(true); }
 			if(this.isEditing){ fav.setEditable(true); }
+
+			fav.container.addEventListener("click", this.activer, false);
 
 			this.serialize();
 			return fav;
@@ -263,6 +305,8 @@ document.body.onload = function(){
 				var fav = new Favori(this.container) ;
 				fav.unserialize(listeUnserialize[i]);
 				fav.afficher();
+
+				fav.container.addEventListener("click", this.activer, false);
 
 				this.listeFavoris.push(fav);
 
@@ -321,13 +365,12 @@ document.body.onload = function(){
 		this.container = document.createElement("div");
 			container.insertBefore(this.container, container.lastChild);
 
-		this.container.onclick = function()
-		{
+		this.container.addEventListener("click", function(){
 			if(that.isEditable && !that.isEditing)
 			{
 				that.setEditing(true);
 			}
-		};
+		}, false);
 
 		this.setEditable = function(edit){
 
@@ -598,8 +641,18 @@ document.body.onload = function(){
 						if (results[0]) {
 							adresse.value = results[0].formatted_address ;
 
-							latitude.value = results[0].geometry.location.mb ;
-							longitude.value = results[0].geometry.location.nb ;
+							for(var arg in results[0].geometry.location)
+							{
+								var pos = parseFloat(results[0].geometry.location[arg]);
+								if(pos > 30 && pos < 50)
+								{
+									latitude.value = pos ;
+								}
+								else if(pos > 1 && pos < 10)
+								{
+									longitude.value = pos ;
+								}
+							}
 
 							map.setCenter(results[0].geometry.location);
 							marker.setPosition(results[0].geometry.location);
@@ -659,6 +712,22 @@ document.body.onload = function(){
 			this.container.parentNode.removeChild(this.container);
 		};
 
+		this.isCurrent = function(anticipation){
+
+			var date = new Date();
+			var jour = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"][date.getDay()] ;
+
+			var now = new Horaire(date.getHours(), date.getMinutes());
+
+			for (var i = 0, c = this.intervals.listeIntervals[jour].length ; i < c; i++) {
+				if(this.intervals.listeIntervals[jour][i].isCurrent(now, anticipation))
+				{
+					return true ;
+				}
+			}
+
+		};
+
 		//Gestion de la persistance des données
 
 		this.serialize = function()
@@ -690,10 +759,19 @@ document.body.onload = function(){
 		};
 	}
 
-	function IntervalsManager()
-	{
+	function IntervalsManager(){
 		var that = this ;
-		this.listeIntervals = {};
+		this.listeIntervals = {
+
+			"lundi": [],
+			"mardi": [],
+			"mercredi": [],
+			"jeudi": [],
+			"vendredi": [],
+			"samedi": [],
+			"dimanche": []
+
+		};
 
 		this.afficher = function(container)
 		{
@@ -764,20 +842,13 @@ document.body.onload = function(){
 			this.intervalDefiner.defineInterval();
 		};
 
-		this.pushList = function(args)
-		{
+		this.pushList = function(args){
 			for(var i = 0, c = args.jours.length ; i < c ; i++)
 			{
-				if(typeof that.listeIntervals[args.jours[i]] == "undefined")
-				{
-					that.listeIntervals[args.jours[i]] = [];
-				}
-
 				that.listeIntervals[args.jours[i]].push(new Interval(args)) ;
 			}
 
 			that.afficher(that.container);
-
 		};
 
 		//Gestion de la persistance des données
@@ -788,16 +859,13 @@ document.body.onload = function(){
 
 			for(var jour in this.listeIntervals)
 			{
-				if(this.listeIntervals[jour].length > 0)
+				if(typeof listeSerialize[jour] == "undefined")
 				{
-					if(typeof listeSerialize[jour] == "undefined")
-					{
-						listeSerialize[jour] = [];
-					}
+					listeSerialize[jour] = [];
+				}
 
-					for (var i = 0, c = this.listeIntervals[jour].length ; i < c; i++) {
-						listeSerialize[jour].push(this.listeIntervals[jour][i].serialize());
-					}
+				for (var i = 0, c = this.listeIntervals[jour].length ; i < c; i++) {
+					listeSerialize[jour].push(this.listeIntervals[jour][i].serialize());
 				}
 			}
 
@@ -809,11 +877,6 @@ document.body.onload = function(){
 		{
 			for(var jour in listeUnserialize)
 			{
-				if(typeof this.listeIntervals[jour] == "undefined")
-				{
-					this.listeIntervals[jour] = [];
-				}
-
 				for (var i = 0, c = listeUnserialize[jour].length ; i < c; i++) {
 					var interval = new Interval(listeUnserialize[jour][i]) ;
 					this.listeIntervals[jour].push(interval);
@@ -825,8 +888,7 @@ document.body.onload = function(){
 		this.intervalDefiner = new intervalDefiner(this.pushList);
 	}
 
-	function intervalDefiner(callback)
-	{
+	function intervalDefiner(callback){
 		var that = this ;
 
 		this.callback = callback ;
@@ -989,8 +1051,7 @@ document.body.onload = function(){
 		};
 	}
 
-	function Interval(interval)
-	{
+	function Interval(interval){
 		this.debut = new Horaire(
 			interval.debut.heure,
 			interval.debut.minutes
@@ -1014,6 +1075,30 @@ document.body.onload = function(){
 			return interval;
 		};
 
+		this.isCurrent = function(horaire, decalage)
+		{
+			var fin = this.fin, debut = new Horaire(this.debut.heure, this.debut.minutes);
+
+			debut.minutes -= decalage ;
+			if(debut.minutes < 0)
+			{
+				debut.minutes += 60 ;
+				debut.heure-- ;
+			}
+
+			console.log(debut);
+
+			if(horaire.isBetween(debut, fin))
+			{
+				return true ;
+			}
+			else
+			{
+				return false;
+			}
+
+		};
+
 		//Gestion de la persistance des données
 
 		this.serialize = function()
@@ -1033,8 +1118,7 @@ document.body.onload = function(){
 		};
 	}
 
-	function Horaire(heure, minutes)
-	{
+	function Horaire(heure, minutes){
 
 		this.heure = 0 + parseInt(heure, 10) % 24;
 		this.minutes = 0 + parseInt(minutes, 10) % 60;
@@ -1042,6 +1126,53 @@ document.body.onload = function(){
 		this.toString = function()
 		{
 			return this.heure + ":" + this.minutes ;
+		};
+
+		this.isSup = function(h2)
+		{
+			if(this.heure > h2.heure)
+			{
+				return true ;
+			}
+			else if(this.heure == h2.heure && this.minute > h2.minute)
+			{
+				return true ;
+			}
+			else
+			{
+				return false ;
+			}
+		};
+		
+		this.isInf = function(h2)
+		{
+			return !this.isSup(h2);
+		};
+
+		this.isBetween = function(h1, h2)
+		{
+			if(h1.isInf(h2))
+			{
+				if(this.isSup(h1) && this.isInf(h2))
+				{
+					return true ;
+				}
+				else
+				{
+					return false ;
+				}
+			}
+			else
+			{
+				if(this.isSup(h2) && this.isInf(h1))
+				{
+					return true ;
+				}
+				else
+				{
+					return false ;
+				}
+			}
 		};
 
 		//Gestion de la persistance des données
@@ -1063,12 +1194,75 @@ document.body.onload = function(){
 		};
 	}
 
+	function routeManager(horairesContainer, mapContainer, favoris){
+		var that = this ;
+
+		this.container = horairesContainer ;
+		this.mapContainer = mapContainer ;
+		this.favoris = favoris ;
+
+		this.favoris.activer =  function(){
+
+			var fav = that.favoris.VtoF(this);
+
+			if(!fav.isEditable)
+			{
+				window.scrollTo(0,0);
+				that.getRoute([fav]);
+			}
+		};
+
+		//Determine les favoris où aller,
+		//prend les coordonnées et envoie la requete pour savoir comment y aller
+		this.getRoute = function(favoris)
+		{
+			this.container.innerHTML = "";
+
+			if(typeof favoris == "undefined")
+			{
+				favoris = this.favoris.getCurrentFavoris(30);
+			}
+
+			for (var i = 0, c = favoris.length ; i < c; i++) {
+				fav = favoris[i];
+
+				api.geo.getPosition(function(position){
+
+					api.ajx.getFile("traceroute.php?lat=" + position.coords.latitude + "&lng=" + position.coords.longitude + "&tLat=" + fav.latitude + "&tLng=" + fav.longitude,
+						function(response){
+							that.afficherHoraires(fav, response);
+						}
+					);
+
+				});
+			}
+		};
+
+		//parse les résultat pour les afficher
+		this.afficherHoraires = function(favori, response){
+
+			this.container.innerHTML += response ;
+		};
+	}
+
+	function Kernel(){
+		this.horairesContainer = document.querySelector("#horaires");
+		this.mapContainer = document.querySelector("#map");
+		this.favorisContainer = document.querySelector("#favoris");
+
+		this.favorisManager = new FavorisManager(this.favorisContainer);
+		this.routeManager = new routeManager(this.horairesContainer, this.mapContainer, this.favorisManager);
+
+		this.favorisManager.unserialize();
+		this.routeManager.getRoute();
+	}
+
+
+
 	//On survient d'abord aux besions en Google Map
 	google.maps.visualRefresh = true ;
 
 	// Balancage massif de purée de Brocolis+pommes+liqueure de frelons
-	var mainManager = new FavorisManager(document.querySelector("#favoris"));
-	Favori.manager = mainManager ;
-	mainManager.unserialize();
+	var app = new Kernel();
 	
 };
