@@ -50,7 +50,8 @@ h4, h6 {
     color: #7f8082;
 }
 
-p, .p {
+p, .p 
+{
     color: #353535;
 }
 
@@ -165,6 +166,10 @@ input.collapsed + input.collapsed
     margin: auto;
 
     text-align: center;
+}
+
+.no-pad{
+    padding: 0 ;
 }
 
 /*-------------------------*/

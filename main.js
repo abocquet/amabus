@@ -259,7 +259,6 @@ document.body.onload = function(){
 		};
 
 		this.addFavori = function(){
-			console.log(this)
 
 			var fav = new Favori(this.container, this);
 			fav.afficher();
@@ -507,7 +506,7 @@ document.body.onload = function(){
 				var isDefaultContainer = document.createElement("div");
 					isDefaultContainer.className = "noPadLeft" ;
 
-					randomId = Math.random() * 10000 + this.latitude + this.longitude ;
+					randomId = Math.random() * 10000 + this.latitude + this.longitude - (new Date().getTime());
 
 					var isDefault = document.createElement('input');
 						isDefault.type = "checkbox";
@@ -519,6 +518,7 @@ document.body.onload = function(){
 						isDefault.addEventListener('click', function(e){
 
 							var listeCheck = that.container.parentNode.querySelectorAll("input.isDefault");
+							console.log(listeCheck);
 
 							if(e.target.checked)
 							{
@@ -885,10 +885,10 @@ document.body.onload = function(){
 			}
 		};
 
-		this.intervalDefiner = new intervalDefiner(this.pushList);
+		this.intervalDefiner = new IntervalDefiner(this.pushList);
 	}
 
-	function intervalDefiner(callback){
+	function IntervalDefiner(callback){
 		var that = this ;
 
 		this.callback = callback ;
@@ -1226,11 +1226,12 @@ document.body.onload = function(){
 			for (var i = 0, c = favoris.length ; i < c; i++) {
 				fav = favoris[i];
 
-				api.geo.getPosition(function(position){
+				var container = this.afficherTarget(favoris[i]);
 
+				api.geo.getPosition(function(position){
 					api.ajx.getFile("traceroute.php?lat=" + position.coords.latitude + "&lng=" + position.coords.longitude + "&tLat=" + fav.latitude + "&tLng=" + fav.longitude,
 						function(response){
-							that.afficherHoraires(fav, response);
+							container.innerHTML = response ;
 						}
 					);
 
@@ -1238,16 +1239,31 @@ document.body.onload = function(){
 			}
 		};
 
-		//parse les résultat pour les afficher
-		this.afficherHoraires = function(favori, response){
+		this.afficherTarget = function(favoris){
 
-			this.container.innerHTML += response ;
+			var titre = document.createElement("h3");
+				titre.textContent = "Pour aller à " + favoris.nom ;
+
+			var adresse = document.createElement("h4");
+				adresse.className = "adresse" ;
+				adresse.textContent = favoris.adresse ;
+
+			var result = document.createElement("div");
+				result.className = 'no-pad';
+				result.innerHTML = "<p>Recherche de l'itinéraire</p>" ;
+
+			this.container.appendChild(titre);
+			this.container.appendChild(adresse);
+			this.container.appendChild(result);
+
+			return result ;
 		};
 	}
 
 	function Kernel(){
 		this.horairesContainer = document.querySelector("#horaires");
-		this.mapContainer = document.querySelector("#map");
+		// this.mapContainer = document.querySelector("#map");
+		this.mapContainer = null ;
 		this.favorisContainer = document.querySelector("#favoris");
 
 		this.favorisManager = new FavorisManager(this.favorisContainer);
