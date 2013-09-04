@@ -14,7 +14,7 @@
 	}
 
 	$conf = array(
-		"key" => "VOTRE CLÉ D'API",
+		"key" => "YOUR API KEY",
 		"mode" => "transit",
 		"depType" => "7",
 		"depLon" => (double) $_GET['lng'],
@@ -36,11 +36,10 @@
 
 
 	$xml = simplexml_load_file($url);
+	$children = $xml->children();
 
 	// header("content-type: application/xml");
 	// echo $xml->asXML();
-
-	$children = $xml->children();
 
 	if($children[0]->code != 0)
 	{
@@ -52,7 +51,7 @@
 
 	for ($i=1; $i < count($children) ; $i++) { 
 
-		$id = $children[$i]->interchangeNumber * count($children[$i]->tripSegments->children()) ;
+		$id = sha1(base_convert((string)$children[$i]->children()->comment, 16, 10)) - $children[$i]->interchangeNumber * count($children[$i]->tripSegments->children()) % 234  ;
 
 		if(!isset($itineraires[$id]))
 		{
@@ -86,7 +85,7 @@
 
 	if($first)
 	{
-		echo "<p>Ou bien:</p>" ;
+		echo "<p class='centered'>----- Ou bien -----</p>" ;
 	}
 	else
 	{
@@ -95,28 +94,28 @@
 
 		foreach($itineraire as $ligne):
 ?>
-<div>
-	<h5><?php echo $ligne->getName() ?></h5>
-	<h6>En partant de <?php echo strtolower($ligne->getArret()) ; ?></h6>
-	<h6>Vers <?php echo strtolower($ligne->getDirection()) ; ?></h6>
+		<div>
+			<h5><?php echo $ligne->getName() ?></h5>
+			<h6>En partant de <?php echo strtolower($ligne->getArret()) ; ?></h6>
+			<h6>Vers <?php echo strtolower($ligne->getDirection()) ; ?></h6>
 
-	<p>
-		<?php 
-			$horaires = $ligne->getHoraires();
+			<p>
+				<?php 
+					$horaires = $ligne->getHoraires();
 
-			for($i = 0, $c = count($horaires) ; $i < $c ; $i++) {
+					for($i = 0, $c = count($horaires) ; $i < $c ; $i++) {
 
-				echo $horaires[$i];
-				if($i != $c -1)
-				{
-					echo ' - ' ;
-				}
+						echo $horaires[$i];
+						if($i != $c -1)
+						{
+							echo ' - ' ;
+						}
 
-			}
-		?>
-	</p>
+					}
+				?>
+			</p>
 
-</div>
+		</div>
 
 <?php
 	
