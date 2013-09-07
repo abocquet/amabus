@@ -14,7 +14,7 @@
 	}
 
 	$conf = array(
-		"key" => "YOUR API KEY",
+		"key" => "",
 		"mode" => "transit",
 		"depType" => "7",
 		"depLon" => (double) $_GET['lng'],
@@ -38,9 +38,6 @@
 	$xml = simplexml_load_file($url);
 	$children = $xml->children();
 
-	// header("content-type: application/xml");
-	// echo $xml->asXML();
-
 	if($children[0]->code != 0)
 	{
 		echo "Erreur de planification : " . $xml->Status->description ;
@@ -51,7 +48,7 @@
 
 	for ($i=1; $i < count($children) ; $i++) { 
 
-		$id = sha1(base_convert((string)$children[$i]->children()->comment, 16, 10)) - $children[$i]->interchangeNumber * count($children[$i]->tripSegments->children()) % 234  ;
+		$id = $children[$i]->interchangeNumber * count($children[$i]->tripSegments->children()) ;
 
 		if(!isset($itineraires[$id]))
 		{
@@ -85,7 +82,7 @@
 
 	if($first)
 	{
-		echo "<p class='centered'>----- Ou bien -----</p>" ;
+		echo "<p>Ou bien:</p>" ;
 	}
 	else
 	{

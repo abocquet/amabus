@@ -235,7 +235,10 @@ document.body.onload = function(){
 
 			this.addFavoriButton.style.display =  "none" ;
 
+		this.favContainer = document.createElement("div");
+
 		this.container.insertBefore(this.editButton, this.container.firstChild);
+		this.container.appendChild(this.favContainer);
 		this.container.appendChild(this.addFavoriButton);
 
 		this.getCurrentFavoris = function(anticipation){
@@ -290,10 +293,10 @@ document.body.onload = function(){
 
 		//gestion de la persistance des données
 		this.serialize = function(){
-
 			var listeFav = [];
 
 			for (var i = 0, c = this.listeFavoris.length ; i < c; i++) {
+				this.listeFavoris[i].bind();
 				listeFav.push(this.listeFavoris[i].serialize());
 			}
 
@@ -307,10 +310,12 @@ document.body.onload = function(){
 
 		this.unserialize = function(){
 
+			this.favContainer.innerHTML = "";
+
 			var listeUnserialize = JSON.parse(localStorage.getItem("serializedFavList")).list ;
 
 			for (var i = 0, c = listeUnserialize.length ; i < c; i++) {
-				var fav = new Favori(this.container) ;
+				var fav = new Favori(this.favContainer) ;
 				fav.unserialize(listeUnserialize[i]);
 				fav.afficher();
 
@@ -393,7 +398,7 @@ document.body.onload = function(){
 			else
 			{
 				this.isEditable = false ;
-				if(this.isEditing){ this.setEditing(false); }
+				this.setEditing(false);
 
 				label.style.display = "none";
 			}
@@ -409,7 +414,6 @@ document.body.onload = function(){
 				if(editingView != undefined){
 
 					Favori.manager.VtoF(editingView).setEditing(false);
-
 				}
 
 				//Puis on rend le nouveau favori en édition
@@ -428,7 +432,6 @@ document.body.onload = function(){
 			else
 			{
 				this.isEditing = false ;
-				
 				that.bind();
 
 				that.container.lastChild.style.display = "none" ;
@@ -527,7 +530,6 @@ document.body.onload = function(){
 						isDefault.addEventListener('click', function(e){
 
 							var listeCheck = that.container.parentNode.querySelectorAll("input.isDefault");
-							console.log(listeCheck);
 
 							if(e.target.checked)
 							{
@@ -679,7 +681,6 @@ document.body.onload = function(){
 		this.bind = function(){
 
 			//On hydrate d'abord le modèle
-
 			for(var val in this.listeInputs){
 				switch(this.listeInputs[val].type)
 				{
@@ -1276,6 +1277,7 @@ document.body.onload = function(){
 		this.container.style.display = "none";
 
 		this.isConnected = false ;
+		this.onConnect = function(){};
 
 		this.login = function() {
 
@@ -1306,13 +1308,15 @@ document.body.onload = function(){
 
 				that.isConnected = true ;
 
+				that.onConnect();
+
 			} else {
 
 				that.state.textContent = "Déconnecté de Facebook";
 				that.button.value = "Se connecter avec Facebook" ;
 				that.button.onclick = that.login ;
 
-				that.isConnected = false
+				that.isConnected = false ;
 			}
 		};
 
@@ -1358,7 +1362,7 @@ document.body.onload = function(){
 
 		this.facebook.initFbCon();
 
-		this.favoris.serializeCallback = function(){
+		this.syncUp =  function(){
 
 			var xhr = new XMLHttpRequest();
 				xhr.open('POST', "synchronize.php");
@@ -1366,9 +1370,16 @@ document.body.onload = function(){
 
 				xhr.onreadystatechange = function(){
 					if (xhr.readyState == 4 && xhr.status == 200) {
-						console.log(xhr.responseText);
 
-						that.facebook.explication.textContent = "Favoris synchronisés" ;
+						if(parseInt(xhr.responseText, 10) == 1)
+						{
+							that.facebook.explication.textContent = "Favoris synchronisés" ;
+						}
+						else
+						{
+							that.facebook.explication.textContent = "Erreur lors de la synchronisation des favoris" ;
+						}
+
 					} else {
 						that.facebook.explication.textContent = "Synchronisation en cours, étape " + xhr.readyState + "/3";
 					}
@@ -1379,22 +1390,56 @@ document.body.onload = function(){
 
 		};
 
+		this.syncDown = function(){
 
+			var xhr = new XMLHttpRequest();
+				xhr.open('GET', "synchronize.php?time=" + localStorage.getItem("serializedFavList").timestamp);
+				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+				xhr.onreadystatechange = function(){
+					if (xhr.readyState == 4 && xhr.status == 200) {
+
+						if(parseInt(xhr.responseText, 10) == 2)
+						{
+							this.syncUp();
+						}
+						else if(parseInt(xhr.responseText, 10) != -1)
+						{
+							localStorage.setItem("serializedFavList", xhr.responseText);
+							that.facebook.explication.textContent = "Favoris synchronisés" ;
+
+							Favori.manager.unserialize();
+						}
+						else
+						{
+							that.facebook.explication.textContent = "Erreur lors de la synchronisation"	;
+						}
+
+					} else {
+						that.facebook.explication.textContent = "Synchronisation en cours, étape " + xhr.readyState + "/3";
+					}
+				};
+				xhr.send();
+
+		};
+
+		this.favoris.serializeCallback = this.syncUp ;
+		this.facebook.onConnect = this.syncDown;
 	}
 
 	function Kernel(){
 		this.horairesContainer = document.querySelector("#horaires");
 		this.favorisContainer = document.querySelector("#favoris");
-		this.facebookConainter = document.querySelector("#facebook");
+		this.facebookContainer = document.querySelector("#facebook");
 
-		this.facebook = new FacebookManager(this.facebookConainter);
+		this.facebook = new FacebookManager(this.facebookContainer);
 		this.favoris = new FavorisManager(this.favorisContainer);
 		this.sync = new SyncManager(this.favoris, this.facebook);
 		this.route = new RouteManager(this.horairesContainer, this.favoris);
 
 
 		this.favoris.unserialize();
-		// this.route.getRoute();
+		this.route.getRoute();
 	}
 
 	//On survient d'abord aux besions en Google Map
