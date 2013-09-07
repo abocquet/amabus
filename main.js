@@ -1,5 +1,4 @@
 document.body.onload = function(){
-
 	/**
 	 *	role -> permet la suppression aisée d'un élément dans un array
 	 *
@@ -68,15 +67,19 @@ document.body.onload = function(){
 
 		geo : {
 
+			fonction: function(){ console.log("geolocation") },
+
 			getPosition : function(fonction, error)
 			{
+				if(fonction != undefined){ api.geo.fonction =  fonction ;}
+
 				if(error == undefined)
 				{
-					navigator.geolocation.getCurrentPosition(fonction, api.geo.displayError);
+					navigator.geolocation.getCurrentPosition(api.geo.fonction, api.geo.displayError);
 				}
 				else
 				{
-					navigator.geolocation.getCurrentPosition(fonction, error);
+					navigator.geolocation.getCurrentPosition(api.geo.fonction, error);
 				}
 			},
 
@@ -85,14 +88,14 @@ document.body.onload = function(){
 				switch(error.code)
 				{
 					case error.PERMISSION_DENIED :
-						window.location = "PAGE D'EXPLICATION" ;
+						alert("La localisation ne peut s'effectuer car vous ne l'avez pas autorisé") ;
 
 						break;
 
 					case error.TIMEOUT :
 						if(confirm("La localisation prend trop de temps. Voulez-vous réessayer ?"))
 						{
-							// GetPosition
+							api.geo.getPosition();
 						}
 						break;
 
@@ -176,6 +179,9 @@ document.body.onload = function(){
 		this.isEditing = false ;
 		this.container = container ;
 
+		this.serializeCallback = function(){};
+		this.unserializeCallback = function(){};
+
 		//Un semblant de pattern singleton
 		Favori.manager = this ;
 
@@ -203,6 +209,8 @@ document.body.onload = function(){
 				}
 				else
 				{
+					that.serialize();
+
 					this.value = "Modifier" ;
 					this.className = "right" ;
 
@@ -230,8 +238,7 @@ document.body.onload = function(){
 		this.container.insertBefore(this.editButton, this.container.firstChild);
 		this.container.appendChild(this.addFavoriButton);
 
-		this.getCurrentFavoris = function(anticipation)
-		{
+		this.getCurrentFavoris = function(anticipation){
 			var listeCurrent = [] ;
 			var defaultFavori ;
 
@@ -255,7 +262,6 @@ document.body.onload = function(){
 			{
 				return [defaultFavori] ;
 			}
-
 		};
 
 		this.addFavori = function(){
@@ -269,7 +275,6 @@ document.body.onload = function(){
 
 			fav.container.addEventListener("click", this.activer, false);
 
-			this.serialize();
 			return fav;
 		};
 
@@ -281,24 +286,28 @@ document.body.onload = function(){
 			if(this.listeFavoris.length == 0){
 				this.addFavori();
 			}
-
-			this.serialize() ;
 		};
 
 		//gestion de la persistance des données
 		this.serialize = function(){
-			var listeSerialize = [];
+
+			var listeFav = [];
 
 			for (var i = 0, c = this.listeFavoris.length ; i < c; i++) {
-				listeSerialize.push(this.listeFavoris[i].serialize());
+				listeFav.push(this.listeFavoris[i].serialize());
 			}
 
-			localStorage.setItem("serializedFavList", JSON.stringify(listeSerialize));
+			var serialize = {};
+				serialize.timestamp = new Date().getTime();
+				serialize.list = listeFav ;
+
+			localStorage.setItem("serializedFavList", JSON.stringify(serialize));
+			this.serializeCallback();
 		};
 
 		this.unserialize = function(){
 
-			var listeUnserialize = JSON.parse(localStorage.getItem("serializedFavList"));
+			var listeUnserialize = JSON.parse(localStorage.getItem("serializedFavList")).list ;
 
 			for (var i = 0, c = listeUnserialize.length ; i < c; i++) {
 				var fav = new Favori(this.container) ;
@@ -695,8 +704,6 @@ document.body.onload = function(){
 				//Le noeud de l'adresse
 				currentElement = giveNextTag("p", currentElement);
 				currentElement.textContent = this.adresse ;
-
-			Favori.manager.serialize();
 		};
 
 		//La création de la vue dynamique se fait au clic sur le bouton "modifier"
@@ -859,13 +866,16 @@ document.body.onload = function(){
 
 			for(var jour in this.listeIntervals)
 			{
-				if(typeof listeSerialize[jour] == "undefined")
-				{
-					listeSerialize[jour] = [];
-				}
+				if(this.listeIntervals[jour].length > 0){
 
-				for (var i = 0, c = this.listeIntervals[jour].length ; i < c; i++) {
-					listeSerialize[jour].push(this.listeIntervals[jour][i].serialize());
+					if(typeof listeSerialize[jour] == "undefined")
+					{
+						listeSerialize[jour] = [];
+					}
+
+					for (var i = 0, c = this.listeIntervals[jour].length ; i < c; i++) {
+						listeSerialize[jour].push(this.listeIntervals[jour][i].serialize());
+					}
 				}
 			}
 
@@ -1194,11 +1204,10 @@ document.body.onload = function(){
 		};
 	}
 
-	function routeManager(horairesContainer, mapContainer, favoris){
+	function RouteManager(horairesContainer, favoris){
 		var that = this ;
 
 		this.container = horairesContainer ;
-		this.mapContainer = mapContainer ;
 		this.favoris = favoris ;
 
 		this.favoris.activer =  function(){
@@ -1229,7 +1238,7 @@ document.body.onload = function(){
 				var container = this.afficherTarget(favoris[i]);
 
 				api.geo.getPosition(function(position){
-					api.ajx.getFile("traceroute.php?lat=" + position.coords.latitude + "&lng=" + position.coords.longitude + "&tLat=" + fav.latitude + "&tLng=" + fav.longitude,
+					api.ajx.getFile("transisere/traceroute.php?lat=" + position.coords.latitude + "&lng=" + position.coords.longitude + "&tLat=" + fav.latitude + "&tLng=" + fav.longitude,
 						function(response){
 							container.innerHTML = response ;
 						}
@@ -1260,25 +1269,137 @@ document.body.onload = function(){
 		};
 	}
 
-	function Kernel(){
-		this.horairesContainer = document.querySelector("#horaires");
-		// this.mapContainer = document.querySelector("#map");
-		this.mapContainer = null ;
-		this.favorisContainer = document.querySelector("#favoris");
+	function FacebookManager(container){
 
-		this.favorisManager = new FavorisManager(this.favorisContainer);
-		this.routeManager = new routeManager(this.horairesContainer, this.mapContainer, this.favorisManager);
+		var that = this ;
+		this.container = container ;
+		this.container.style.display = "none";
 
-		this.favorisManager.unserialize();
-		this.routeManager.getRoute();
+		this.isConnected = false ;
+
+		this.login = function() {
+
+			FB.login(that.checkLoginStatus, {});
+		};
+
+		this.logout = function() {
+			FB.logout(function(response){
+				that.checkLoginStatus(response);
+			});
+		};
+
+		// Check the result of the user status and display login button if necessary
+		this.checkLoginStatus = function(response) {
+
+			if(response && response.status == 'connected') {
+
+				that.state.textContent = "Connecté comme " ;
+
+				FB.api('/me', function(response) {
+					that.state.textContent += response.name ;
+				});
+
+				that.explication.textContent = "Favoris synchronisés";
+
+				that.button.value = "Se déconnecter de Facebook";
+				that.button.onclick = that.logout ;
+
+				that.isConnected = true ;
+
+			} else {
+
+				that.state.textContent = "Déconnecté de Facebook";
+				that.button.value = "Se connecter avec Facebook" ;
+				that.button.onclick = that.login ;
+
+				that.isConnected = false
+			}
+		};
+
+		this.initFbCon = function(){
+
+			this.button = document.createElement("input");
+				this.button.value = "Se connecter avec Facebook" ;
+				this.button.type = "button" ;
+				this.button.className = "right" ;
+				this.button.onclick = this.login ;
+
+			this.state = document.createElement("h3");
+				this.state.textContent = "Déconnecté de Facebook";
+
+			this.explication = document.createElement("p");
+				this.explication.textContent = "Vous connecter à amabus via Facebook vous permet de synchroniser vos lieux favoris" ;
+
+			this.container.appendChild(this.button);
+			this.container.appendChild(this.state);
+			this.container.appendChild(this.explication);
+
+			// Initialize the Facebook JavaScript SDK
+			FB.init({
+				appId: '673004596045448',
+				xfbml: true,
+				status: true,
+				cookie: true,
+			});
+
+			// Check if the current user is logged in and has authorized the app
+			FB.getLoginStatus(this.checkLoginStatus);
+
+			this.container.style.display = "block" ;
+		};
 	}
 
+	function SyncManager(favorisManager, facebookManager){
 
+		var that = this ;
+
+		this.favoris = favorisManager ;
+		this.facebook = facebookManager ;
+
+		this.facebook.initFbCon();
+
+		this.favoris.serializeCallback = function(){
+
+			var xhr = new XMLHttpRequest();
+				xhr.open('POST', "synchronize.php");
+				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+				xhr.onreadystatechange = function(){
+					if (xhr.readyState == 4 && xhr.status == 200) {
+						console.log(xhr.responseText);
+
+						that.facebook.explication.textContent = "Favoris synchronisés" ;
+					} else {
+						that.facebook.explication.textContent = "Synchronisation en cours, étape " + xhr.readyState + "/3";
+					}
+				};
+				xhr.send(
+					"favoris=" + localStorage.getItem("serializedFavList")
+				);
+
+		};
+
+
+	}
+
+	function Kernel(){
+		this.horairesContainer = document.querySelector("#horaires");
+		this.favorisContainer = document.querySelector("#favoris");
+		this.facebookConainter = document.querySelector("#facebook");
+
+		this.facebook = new FacebookManager(this.facebookConainter);
+		this.favoris = new FavorisManager(this.favorisContainer);
+		this.sync = new SyncManager(this.favoris, this.facebook);
+		this.route = new RouteManager(this.horairesContainer, this.favoris);
+
+
+		this.favoris.unserialize();
+		// this.route.getRoute();
+	}
 
 	//On survient d'abord aux besions en Google Map
 	google.maps.visualRefresh = true ;
 
 	// Balancage massif de purée de Brocolis+pommes+liqueure de frelons
 	var app = new Kernel();
-	
 };
